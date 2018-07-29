@@ -1,25 +1,32 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/imdario/mergo"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"log"
 	"os"
 )
 
 const configName string = "./config.yaml"
-const exifToolPath string = "./exiftool"
+const exifToolPath string = "exiftool"
 
 type config struct {
 	ExifToolPath string `yaml:"exiftool"`
+	Fields       []string
+	TagMap       map[string][]string
 }
 
 func defineConfig() config {
-	var defaultConfig = config{exifToolPath}
+	var defaultConfig = config{
+		ExifToolPath: exifToolPath,
+	}
 
 	if configFileDetected() {
-		fileConfig := loadConfig()
+		fileConfig, err := loadConfig()
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		return mergeConfigs(fileConfig, defaultConfig)
 	}
@@ -34,19 +41,19 @@ func configFileDetected() bool {
 }
 
 // Read config file, panic when reading or unmarshal fails
-func loadConfig() config {
+func loadConfig() (config, error) {
 	data, err := ioutil.ReadFile(configName)
 	if err != nil {
-		panic(fmt.Sprintf("Error occurred while reading config %s: %s", configName, err))
+		return config{}, err
 	}
 
 	fileConfig := config{}
 	err = yaml.Unmarshal([]byte(data), &fileConfig)
 	if err != nil {
-		panic(fmt.Sprintf("Error occurred while unmarshalling config %s: %s", configName, err))
+		return config{}, err
 	}
 
-	return fileConfig
+	return fileConfig, nil
 }
 
 func mergeConfigs(fileConfig, defaultConfig config) config {

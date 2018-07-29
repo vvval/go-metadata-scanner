@@ -14,7 +14,7 @@ var rootCmd = &cobra.Command{
 or read metadata from input file and bulk update the photos`,
 }
 
-var runtimeConfig config
+var appConfig config
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -26,5 +26,5 @@ func Execute() {
 }
 
 func init() {
-	runtimeConfig = defineConfig()
+	appConfig = defineConfig()
 }

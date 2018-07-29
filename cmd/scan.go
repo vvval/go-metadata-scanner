@@ -3,7 +3,10 @@ package cmd
 import (
 	"fmt"
 
+	"encoding/json"
 	"github.com/spf13/cobra"
+	"log"
+	"os/exec"
 )
 
 // scanCmd represents the scan command
@@ -17,14 +20,34 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("scan called")
+
+		cmdArgs := []string{}
+
+		for _, k := range appConfig.Fields {
+			cmdArgs = append(cmdArgs, fmt.Sprintf("-%s:all", k))
+		}
+		cmdArgs = append(cmdArgs, "-j", "-G", cmdInput.filename)
+
+		fmt.Println("cmd args: %+v\n", cmdArgs)
+		execCmd := exec.Command(appConfig.ExifToolPath, cmdArgs...)
+		result, err := execCmd.Output()
+		fmt.Println(string(result))
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			a := [1]map[string]interface{}{}
+			err = json.Unmarshal([]byte(result), &a)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(scanCmd)
 
-	//fmt.Printf("%+v\n", runtimeConfig)
+	//fmt.Printf("%+v\n", appConfig)
 
 	// Here you will define your flags and configuration settings.
 
