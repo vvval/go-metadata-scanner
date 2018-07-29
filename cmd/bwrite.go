@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/vvval/go-metadata-scanner/util"
 	"io"
 	"log"
 	"os"
@@ -53,19 +54,40 @@ func bulkwrite(cmd *cobra.Command, args []string) {
 	reader := csvReader(file)
 
 	var columnsLineFound bool
-	var columns map[string]int
+	var columns map[int]string
 
 	//rowChan := make(chan int)
+
+	//readDone, writeDone := make(chan struct{}), make(chan struct{})
+	//readLine, writeLine := make(chan bool), make(chan bool)
+	//
+	//go func() {
+	//	var countLines = 0
+	//	for {
+	//		select {
+	//		case <-readLine:
+	//			countLines++
+	//		case <-writeLine:
+	//			countLines --
+	//			if countLines == 0 {
+	//				close(done)
+	//			}
+	//		case <-done:
+	//			return
+	//		}
+	//	}
+	//}()
 
 	for {
 		line, err := reader.Read()
 		if err == io.EOF {
-			fmt.Printf("csv file ended\n")
+			//readDone <- struct{}{}
 			break
 		}
 
 		if err != nil {
 			log.Fatalln(err)
+
 			break
 		}
 
@@ -80,43 +102,25 @@ func bulkwrite(cmd *cobra.Command, args []string) {
 			continue
 		}
 
-		//rowChan <- 1
-
-		fmt.Printf("csv line: %T%v\n", line, line)
-
+		result, err := writeLine(filenameCandidates(line[0]), mapLineData(columns, line))
+		if err != nil {
+			log.Fatalln(err)
+		} else {
+			fmt.Println(string(result))
+		}
 	}
-	fmt.Printf("csv columns: %v\n", columns)
-	///
 
-	//readchan:=make(chan []byte)
-	//if err := gocsv.UnmarshalToChan(file, &readchan); err != nil { // Load clients from file
-	//	panic(err)
-	//}
-
-	//var m interface{}
-	//gocsv.Unmarshal(file,&m)
-	//fmt.Printf("%v\n",m)
-
-	//cmdArgs := []string{}
-	//
+	//var cmdArgs = []string{}
 	//for _, k := range appConfig.Fields {
-	//	cmdArgs = append(cmdArgs, fmt.Sprintf("-%s:all", k))
+	//	cmdArgs = append(cmdArgs, fmt.Sprintf("-%s:all", k), "-jfif:all")
 	//}
-	//cmdArgs = append(cmdArgs, "-j", "-G", cmdInput.filename)
-	//
-	//fmt.Println("cmd args: %+v\n", cmdArgs)
+	//fmt.Printf("%v",cmdArgs)
+	//cmdArgs = append(cmdArgs, `-Headline=my head is "spinning"! ~=hello`, "/Users/xavier/Documents/123.jpg")
+	//fmt.Printf("%v",cmdArgs)
 	//execCmd := exec.Command(appConfig.ExifToolPath, cmdArgs...)
 	//result, err := execCmd.Output()
-	////fmt.Println(string(result))
-	//if err != nil {
-	//	log.Fatal(err)
-	//} else {
-	//	a := [1]map[string]interface{}{}
-	//	err = json.Unmarshal([]byte(result), &a)
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
-	//}
+	//fmt.Println(string(result))
+	//fmt.Printf("%v\n",columns)
 }
 
 // Do some preparations to a user input
@@ -135,8 +139,8 @@ func csvReader(csvFile *os.File) *csv.Reader {
 }
 
 // Map columns to a known tag map
-func mapColumns(line []string) map[string]int {
-	output := map[string]int{}
+func mapColumns(line []string) map[int]string {
+	output := map[int]string{}
 	for key, values := range appConfig.TagMap {
 		for index, name := range line {
 			// Skip empty lines and 1st column
@@ -146,7 +150,7 @@ func mapColumns(line []string) map[string]int {
 
 			// Tag map key matches
 			if strings.EqualFold(name, key) {
-				output[strings.Trim(key, "")] = index
+				output[index] = strings.Trim(key, "")
 
 				continue
 			}
@@ -154,7 +158,7 @@ func mapColumns(line []string) map[string]int {
 			// Tag map value matches
 			for _, value := range values {
 				if strings.EqualFold(name, value) || strings.EqualFold(name, truncateKeyPrefix(value)) {
-					output[strings.Trim(key, "")] = index
+					output[index] = strings.Trim(key, "")
 
 					break
 				}
@@ -175,4 +179,59 @@ func truncateKeyPrefix(key string) string {
 	runes := []rune(key)
 
 	return string(runes[prefixEnding+1:])
+}
+
+func filenameCandidates(name string) []string {
+	return []string{name}
+}
+
+func mapLineData(columns map[int]string, data []string) map[string]string {
+	output := map[string]string{}
+
+	for index, value := range data {
+		key, ok := columns[index]
+		// Unmapped key, skip
+		if !ok {
+			continue
+		}
+
+		// Unknown tag
+		tags, ok := (appConfig.TagMap)[key]
+		if !ok {
+			continue
+		}
+
+		for _, tag := range tags {
+			output[tag] = value
+		}
+	}
+
+	return output
+}
+
+func writeLine(names []string, tags map[string]string) ([]byte, error) {
+	var args []string
+	for tag, value := range tags {
+		args = append(args, fmt.Sprintf("-%s=%v", tag, convertValue(value)))
+	}
+
+	for _, name := range names {
+		args = append(args, name)
+	}
+
+	out, err := util.Run(appConfig.ExifToolPath, args...)
+
+	return []byte(out), err
+}
+
+func convertValue(value string) interface{} {
+	if strings.EqualFold(value, "true") {
+		return true
+	}
+
+	if strings.EqualFold(value, "false") {
+		return false
+	}
+
+	return value
 }
