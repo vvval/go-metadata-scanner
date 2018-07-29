@@ -94,6 +94,7 @@ func bulkwrite(cmd *cobra.Command, args []string) {
 		if !columnsLineFound {
 			columnsLineFound = true
 			columns = mapColumns(line)
+			fmt.Printf("%+v\n%+v\n\n\n\n", line, columns)
 
 			continue
 		}
@@ -110,17 +111,11 @@ func bulkwrite(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	//var cmdArgs = []string{}
-	//for _, k := range appConfig.Fields {
-	//	cmdArgs = append(cmdArgs, fmt.Sprintf("-%s:all", k), "-jfif:all")
-	//}
-	//fmt.Printf("%v",cmdArgs)
-	//cmdArgs = append(cmdArgs, `-Headline=my head is "spinning"! ~=hello`, "/Users/xavier/Documents/123.jpg")
-	//fmt.Printf("%v",cmdArgs)
-	//execCmd := exec.Command(appConfig.ExifToolPath, cmdArgs...)
-	//result, err := execCmd.Output()
-	//fmt.Println(string(result))
-	//fmt.Printf("%v\n",columns)
+	files, err := util.Scan(cmdInput.directory, appConfig.Extensions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("files %s\n", files)
 }
 
 // Do some preparations to a user input
@@ -143,6 +138,7 @@ func mapColumns(line []string) map[int]string {
 	output := map[int]string{}
 	for key, values := range appConfig.TagMap {
 		for index, name := range line {
+			name = strings.Trim(name, " ")
 			// Skip empty lines and 1st column
 			if index == 0 || len(name) == 0 {
 				continue
@@ -150,7 +146,7 @@ func mapColumns(line []string) map[int]string {
 
 			// Tag map key matches
 			if strings.EqualFold(name, key) {
-				output[index] = strings.Trim(key, "")
+				output[index] = key
 
 				continue
 			}
@@ -158,7 +154,7 @@ func mapColumns(line []string) map[int]string {
 			// Tag map value matches
 			for _, value := range values {
 				if strings.EqualFold(name, value) || strings.EqualFold(name, truncateKeyPrefix(value)) {
-					output[index] = strings.Trim(key, "")
+					output[index] = key
 
 					break
 				}
@@ -235,3 +231,8 @@ func convertValue(value string) interface{} {
 
 	return value
 }
+
+//func visit(path string, f os.FileInfo, err error) error {
+//	fmt.Printf("Visited: %s\n", path)
+//	return nil
+//}

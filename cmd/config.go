@@ -13,8 +13,10 @@ const exifToolPath string = "exiftool"
 
 type config struct {
 	ExifToolPath string `yaml:"exiftool"`
+	Extensions   []string
 	Fields       []string
 	TagMap       map[string][]string
+	ListTags     []string
 }
 
 func defineConfig() config {

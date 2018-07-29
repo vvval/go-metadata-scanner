@@ -1,6 +1,8 @@
 #path to executable file (avoid using "./" in the beginning of the filename)
 exiftool: "exiftool"
 
+extensions: ["jpg","jpeg","png","bmp"]
+
 #fields to be fetched from image files
 fields: ["exif","iptc","xmp","icc_profile"]
 
