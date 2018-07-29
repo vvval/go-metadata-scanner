@@ -41,42 +41,21 @@ func init() {
 	bwriteCmd.Flags().BoolVarP(&cmdInput.saveOriginals, "originals", "o", false, "Save original files (overwrite with new data if not set)?")
 }
 
-type Client struct {
-	// Our example struct, you can use "-" to ignore a field
-	Id      string //`csv:"client_id"`
-	Name    string //`csv:"client_name"`
-	Age     string //`csv:"client_age"`
-	NotUsed string //`csv:"-"`
-}
-
-type Employee struct {
-	FirstName string
-	LastName  string
-	Age       int
-}
-
 func bulkwrite(cmd *cobra.Command, args []string) {
 	prepareInput(&cmdInput)
 
-	file, err := os.OpenFile(cmdInput.filename, os.O_RDWR|os.O_CREATE, os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	///
-	csvFile, err := os.Open(cmdInput.filename)
+	file, err := os.OpenFile(cmdInput.filename, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	defer csvFile.Close()
+	defer file.Close()
 
-	reader := csv.NewReader(csvFile)
-	reader.Comma = ';'
-	reader.FieldsPerRecord = -1
+	reader := csvReader(file)
 
-	var columnsRead bool
-	//var columns map[int]string
+	var columnsLineFound bool
+	var columns map[string]int
+
+	//rowChan := make(chan int)
 
 	for {
 		line, err := reader.Read()
@@ -90,19 +69,23 @@ func bulkwrite(cmd *cobra.Command, args []string) {
 			break
 		}
 
-		if !columnsRead {
-			columnsRead = true
+		if !columnsLineFound {
+			columnsLineFound = true
+			columns = mapColumns(line)
 
-			fmt.Printf("columns: %v\n\n\n", line)
+			continue
 		}
 
 		if len(line) == 0 || len(line[0]) == 0 {
 			continue
 		}
+
+		//rowChan <- 1
+
 		fmt.Printf("csv line: %T%v\n", line, line)
 
 	}
-	fmt.Printf("debug: %v\n\n\n", mapColumns([]string{"", "keywords", "province-State", "Caption-Abstract"}))
+	fmt.Printf("csv columns: %v\n", columns)
 	///
 
 	//readchan:=make(chan []byte)
@@ -136,37 +119,42 @@ func bulkwrite(cmd *cobra.Command, args []string) {
 	//}
 }
 
+// Do some preparations to a user input
 func prepareInput(input *input) {
 	if len(input.directory) == 0 {
 		input.directory = filepath.Dir(input.filename)
 	}
 }
 
+func csvReader(csvFile *os.File) *csv.Reader {
+	reader := csv.NewReader(csvFile)
+	reader.Comma = ';'
+	reader.FieldsPerRecord = -1
+
+	return reader
+}
+
+// Map columns to a known tag map
 func mapColumns(line []string) map[string]int {
 	output := map[string]int{}
 	for key, values := range appConfig.TagMap {
 		for index, name := range line {
+			// Skip empty lines and 1st column
 			if index == 0 || len(name) == 0 {
 				continue
 			}
 
+			// Tag map key matches
 			if strings.EqualFold(name, key) {
-				output[key] = index
+				output[strings.Trim(key, "")] = index
 
 				continue
 			}
 
+			// Tag map value matches
 			for _, value := range values {
-				prefixEnding := strings.Index(value, ":")
-				if prefixEnding == -1 {
-					continue
-				}
-
-				runes := []rune(value)
-				truncatedMapKey := string(runes[prefixEnding+1:])
-
-				if strings.EqualFold(name, truncatedMapKey) {
-					output[key] = index
+				if strings.EqualFold(name, value) || strings.EqualFold(name, truncateKeyPrefix(value)) {
+					output[strings.Trim(key, "")] = index
 
 					break
 				}
@@ -175,4 +163,16 @@ func mapColumns(line []string) map[string]int {
 	}
 
 	return output
+}
+
+// Cut <group:> prefix if found
+func truncateKeyPrefix(key string) string {
+	prefixEnding := strings.Index(key, ":")
+	if prefixEnding == -1 {
+		return key
+	}
+
+	runes := []rune(key)
+
+	return string(runes[prefixEnding+1:])
 }
