@@ -79,7 +79,6 @@ func bulkwrite(cmd *cobra.Command, args []string) {
 	var columns map[int]string
 
 	//rowChan := make(chan int)
-
 	//readDone, writeDone := make(chan struct{}), make(chan struct{})
 	//readLine, writeLine := make(chan bool), make(chan bool)
 	//
