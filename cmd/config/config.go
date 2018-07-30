@@ -1,4 +1,4 @@
-package cmd
+package config
 
 import (
 	"github.com/imdario/mergo"
@@ -19,6 +19,16 @@ type config struct {
 	ListTags     []string
 }
 
+var appConfig config
+
+func AppConfig() config {
+	return appConfig
+}
+
+func init() {
+	appConfig = defineConfig()
+}
+
 func defineConfig() config {
 	var defaultConfig = config{
 		ExifToolPath: exifToolPath,
@@ -27,7 +37,7 @@ func defineConfig() config {
 	if configFileDetected() {
 		fileConfig, err := loadConfig()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
 		}
 
 		return mergeConfigs(fileConfig, defaultConfig)
@@ -42,7 +52,7 @@ func configFileDetected() bool {
 	return err == nil
 }
 
-// Read config file, panic when reading or unmarshal fails
+// Read config file
 func loadConfig() (config, error) {
 	data, err := ioutil.ReadFile(configName)
 	if err != nil {
@@ -58,6 +68,8 @@ func loadConfig() (config, error) {
 	return fileConfig, nil
 }
 
+// Merge default config and file config.
+// File config is primary
 func mergeConfigs(fileConfig, defaultConfig config) config {
 	mergo.Merge(&fileConfig, defaultConfig)
 

@@ -5,6 +5,7 @@ import (
 
 	"encoding/json"
 	"github.com/spf13/cobra"
+	"github.com/vvval/go-metadata-scanner/cmd/config"
 	"log"
 	"os/exec"
 )
@@ -23,13 +24,13 @@ to quickly create a Cobra application.`,
 
 		cmdArgs := []string{}
 
-		for _, k := range appConfig.Fields {
+		for _, k := range config.AppConfig().Fields {
 			cmdArgs = append(cmdArgs, fmt.Sprintf("-%s:all", k))
 		}
 		cmdArgs = append(cmdArgs, "-j", "-G", cmdInput.filename)
 
 		fmt.Println("cmd args: %+v\n", cmdArgs)
-		execCmd := exec.Command(appConfig.ExifToolPath, cmdArgs...)
+		execCmd := exec.Command(config.AppConfig().ExifToolPath, cmdArgs...)
 		result, err := execCmd.Output()
 		fmt.Println(string(result))
 		if err != nil {

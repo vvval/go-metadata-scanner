@@ -1,4 +1,4 @@
-#path to executable file (avoid using "./" in the beginning of the filename)
+#path to executable file (do not specify "./" in the beginning of the filename if executable file in same directory)
 exiftool: "exiftool"
 
 extensions: ["jpg","jpeg","png","bmp"]
