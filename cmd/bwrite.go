@@ -64,6 +64,8 @@ func bulkwrite(cmd *cobra.Command, args []string) {
 	//	}
 	//}()
 
+	//var lines map[string]interface{}
+
 	for {
 		line, err := reader.Read()
 		if err == io.EOF {
@@ -90,7 +92,7 @@ func bulkwrite(cmd *cobra.Command, args []string) {
 		}
 
 		fmt.Printf("line %v\n", line)
-		result, err := bwrite.WriteFile(filenameCandidates(line[0]), bwrite.MapLine(columns, line))
+		result, err := bwrite.WriteFile(filenameCandidates(line[0]), bwrite.MapLineToColumns(columns, line))
 		if err != nil {
 			log.Fatalln(err)
 		} else {

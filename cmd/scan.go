@@ -1,14 +1,13 @@
 package cmd
 
 import (
-	"fmt"
-
 	"encoding/json"
+	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/vvval/go-metadata-scanner/cmd/bwrite"
 	"github.com/vvval/go-metadata-scanner/cmd/config"
 	"log"
 	"os/exec"
+	"reflect"
 )
 
 // scanCmd represents the scan command
@@ -22,19 +21,10 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		input := bwrite.Input()
-		cmdArgs := []string{}
-
-		for _, k := range config.AppConfig().Fields {
-			cmdArgs = append(cmdArgs, fmt.Sprintf("-%s:all", k))
-		}
-		cmdArgs = append(cmdArgs, "-j", "-G", input.Filename())
-
-		fmt.Println("cmd args: %+v\n", cmdArgs)
-		execCmd := exec.Command(config.AppConfig().ExifToolPath, cmdArgs...)
+		//var m = map[string]interface{}{}
+		//var a = []interface{}{}
+		execCmd := exec.Command(config.AppConfig().ExifToolPath, "-j", "-Keywords", "keywords/test.jpg")
 		result, err := execCmd.Output()
-		fmt.Println(string(result))
 		if err != nil {
 			log.Fatal(err)
 		} else {
@@ -43,7 +33,51 @@ to quickly create a Cobra application.`,
 			if err != nil {
 				log.Fatal(err)
 			}
+
+			fmt.Printf("%+v\n", a)
+			for k, v := range a[0] {
+				fmt.Printf("%s:%v\n", k, v)
+				//or via type assertion
+				switch reflect.TypeOf(v).Kind() {
+				case reflect.Array:
+					fallthrough
+				case reflect.Slice:
+					s := reflect.ValueOf(v)
+
+					for i := 0; i < s.Len(); i++ {
+						fmt.Printf("%d: %v\n", i, s.Index(i))
+					}
+				}
+				//for vk, vv := range v {
+				//	fmt.Printf("%+v:%+v\n", vk, vv)
+				//}
+			}
 		}
+
+		//a = append(a, m)
+
+		return
+		//input := bwrite.Input()
+		//cmdArgs := []string{}
+		//
+		//for _, k := range config.AppConfig().Fields {
+		//	cmdArgs = append(cmdArgs, fmt.Sprintf("-%s:all", k))
+		//}
+		//cmdArgs = append(cmdArgs, "-j", "-G", input.Filename())
+		//
+		//fmt.Println("cmd args: %+v\n", cmdArgs)
+		//execCmd := exec.Command(config.AppConfig().ExifToolPath, cmdArgs...)
+		//result, err := execCmd.Output()
+		//fmt.Println(string(result))
+		//if err != nil {
+		//	log.Fatal(err)
+		//} else {
+		//	a := [1]map[string]interface{}{}
+		//	err = json.Unmarshal([]byte(result), &a)
+		//	if err != nil {
+		//		log.Fatal(err)
+		//	}
+		//}
 	},
 }
 

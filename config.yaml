@@ -39,6 +39,5 @@ tagmap:
   source: ["IPTC:Source","XMP:Source"]
 
 #known list-value tags
-listtags: ["EXIF:Artist","IPTC:Keywords","IPTC:By-line","IPTC:By-lineTitle","IPTC:Contact","IPTC:Writer-Editor",
-           "XMP:Subject","XMP:Creator","XMP:AuthorsPosition","XMP:Contributor","XMP:Publisher","XMP:TagsList",
-           "XMP:PersonInImage","XMP:People","XMP:Owner"]
+listtags: ["creator","keywords","creatorTitle","personInImage","copyrightOwner",
+           "IPTC:Contact","IPTC:Writer-Editor","XMP:Contributor","XMP:TagsList","XMP:Publisher"]
