@@ -9,20 +9,20 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 )
 
-// bwriteCmd represents the bwrite command
-var bwriteCmd = &cobra.Command{
-	Use:   "bwrite",
-	Short: "Read metadata from file and write to images",
-	Long: `Read metadata from file and write to images. Input file should be a CSV file with comma-separated fields.
+func init() {
+	var bwriteCmd = &cobra.Command{
+		Use:   "bwrite",
+		Short: "Read metadata from file and write to images",
+		Long: `Read metadata from file and write to images. Input file should be a CSV file with comma-separated fields.
 First column should be reserved for file names, its name is omitted.
 Other columns should be named as keywords in a config.yaml tagmap section provided
 for proper mapping CSV data into appropriate metadata fields`,
-	Run: bulkwrite,
-}
+		Run: bulkwrite,
+	}
 
-func init() {
 	rootCmd.AddCommand(bwriteCmd)
 	bwrite.InitFlags(bwriteCmd)
 }
@@ -42,27 +42,6 @@ func bulkwrite(cmd *cobra.Command, args []string) {
 
 	var columnsLineFound bool
 	var columns map[int]string
-
-	//rowChan := make(chan int)
-	//readDone, writeDone := make(chan struct{}), make(chan struct{})
-	//readLine, writeLine := make(chan bool), make(chan bool)
-	//
-	//go func() {
-	//	var countLines = 0
-	//	for {
-	//		select {
-	//		case <-readLine:
-	//			countLines++
-	//		case <-writeLine:
-	//			countLines --
-	//			if countLines == 0 {
-	//				close(done)
-	//			}
-	//		case <-done:
-	//			return
-	//		}
-	//	}
-	//}()
 
 	//var lines map[string]interface{}
 
@@ -92,7 +71,13 @@ func bulkwrite(cmd *cobra.Command, args []string) {
 		}
 
 		fmt.Printf("line %v\n", line)
-		result, err := bwrite.WriteFile(filenameCandidates(line[0]), bwrite.MapLineToColumns(columns, line))
+		result, err := bwrite.WriteFile(
+			filenameCandidates(input.Directory(), line[0]),
+			bwrite.MapLineToColumns(columns, line),
+			input.Originals(),
+			input.Append(),
+		)
+
 		if err != nil {
 			log.Fatalln(err)
 		} else {
@@ -121,6 +106,6 @@ func skipLine(line []string) bool {
 	return len(line) == 0 || len(line[0]) == 0
 }
 
-func filenameCandidates(name string) []string {
-	return []string{name}
+func filenameCandidates(dir, name string) []string {
+	return []string{filepath.Join(dir, name)}
 }

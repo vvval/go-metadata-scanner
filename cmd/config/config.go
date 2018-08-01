@@ -16,6 +16,7 @@ type config struct {
 	Extensions   []string
 	Fields       []string
 	TagMap       map[string][]string
+	BoolTags     []string
 	ListTags     []string
 }
 

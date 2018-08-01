@@ -3,14 +3,23 @@ package bwrite
 import (
 	"fmt"
 	"github.com/vvval/go-metadata-scanner/cmd/config"
+	"github.com/vvval/go-metadata-scanner/cmd/metadata"
 	"github.com/vvval/go-metadata-scanner/util"
-	"strings"
 )
 
-func WriteFile(names []string, tags map[string]string) ([]byte, error) {
+func WriteFile(names []string, l metadata.Line, saveOriginals, appendValues bool) ([]byte, error) {
 	var args []string
-	for tag, value := range tags {
-		args = append(args, fmt.Sprintf("-%s=%v", tag, convertValue(value)))
+
+	for tag, value := range l.Tags() {
+		args = append(args, fmt.Sprintf("-%s=%v", tag, value))
+	}
+
+	if l.UseSeparator() {
+		args = append(args, fmt.Sprintf("-sep %s", metadata.Separator()))
+	}
+
+	if !saveOriginals {
+		args = append(args, "-overwrite_original")
 	}
 
 	for _, name := range names {
@@ -20,16 +29,4 @@ func WriteFile(names []string, tags map[string]string) ([]byte, error) {
 	out, err := util.Run(config.AppConfig().ExifToolPath, args...)
 
 	return []byte(out), err
-}
-
-func convertValue(value string) interface{} {
-	if strings.EqualFold(value, "true") {
-		return true
-	}
-
-	if strings.EqualFold(value, "false") {
-		return false
-	}
-
-	return value
 }

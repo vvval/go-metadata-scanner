@@ -2,11 +2,10 @@ package bwrite
 
 import (
 	"github.com/vvval/go-metadata-scanner/cmd/config"
-	"regexp"
+	"github.com/vvval/go-metadata-scanner/cmd/metadata"
+	"github.com/vvval/go-metadata-scanner/util"
 	"strings"
 )
-
-const separator string = "<sep>"
 
 // Script will pick all values for line data that are presented in columns (by column index)
 // and fill output array with line value for each tag aliases from TagMap.
@@ -20,10 +19,10 @@ const separator string = "<sep>"
 // 			"IPTC:description1":"some description",
 // 			"XMP:description2":"some description"
 // 		]
-func MapLineToColumns(columns map[int]string, line []string) map[string]string {
-	output := map[string]string{}
+func MapLineToColumns(columns map[int]string, input []string) metadata.Line {
+	line := metadata.NewLine()
 
-	for index, value := range line {
+	for index, value := range input {
 		key, ok := columns[index]
 		if !ok {
 			// Unmapped key, skip
@@ -37,21 +36,36 @@ func MapLineToColumns(columns map[int]string, line []string) map[string]string {
 		}
 
 		for _, tag := range tags {
-			if IsListTag(tag) {
-				value = filterEmptyStringChunks(value)
+			var val interface{}
+
+			switch {
+			case isListTag(tag):
+				val = util.SplitKeywords(value)
+			case isBoolTag(tag):
+				val = len(value) != 0
+			default:
+				val = value
 			}
 
-			output[tag] = value
+			line.AddTag(tag, val)
 		}
 	}
 
-	return output
+	return line
 }
 
-func IsListTag(name string) bool {
-	name = findTagAliasKey(name)
-	for _, tag := range config.AppConfig().ListTags {
-		if strings.EqualFold(name, tag) || strings.EqualFold(name, truncateKeyPrefix(tag)) {
+func isListTag(name string) bool {
+	return oneOf(name, config.AppConfig().ListTags)
+}
+
+func isBoolTag(name string) bool {
+	return oneOf(name, config.AppConfig().BoolTags)
+}
+
+func oneOf(name string, set []string) bool {
+	key := tagAliasKey(name)
+	for _, tag := range set {
+		if tagEquals(name, tag) || tagEquals(key, tag) {
 			// Given name is a presented alias, or name (ignoring <group:> prefix)
 			return true
 		}
@@ -60,56 +74,34 @@ func IsListTag(name string) bool {
 	return false
 }
 
-func filterEmptyStringChunks(s string) string {
-	var regex = regexp.MustCompile(`\s?[,;]\s?`)
-	s = regex.ReplaceAllString(s, separator)
-
-	filtered := trimEmptyChunks(strings.Split(s, separator))
-
-	return strings.Join(filtered, separator)
-}
-
-func trimEmptyChunks(value []string) []string {
-	var chunks []string
-
-	for _, chunk := range value {
-		chunk = strings.Trim(chunk, " ")
-		if len(chunk) == 0 {
-			continue
-		}
-
-		chunks = append(chunks, chunk)
-	}
-
-	return chunks
-}
-
 // Map columns to a known tag map
 // Skip 1st column (dedicated to a file names) and empty columns
 func MapColumns(columns []string) map[int]string {
 	output := map[int]string{}
-	for index, value := range columns {
-		value = strings.Trim(value, " ")
-		if index == 0 || len(value) == 0 {
+	for i, tag := range columns {
+		tag = strings.Trim(tag, " ")
+		if i == 0 || len(tag) == 0 {
 			// Skip 1st column and empty columns
 			continue
 		}
 
-		output[index] = findTagAliasKey(value)
+		output[i] = tagAliasKey(tag)
 	}
 
 	return output
 }
 
-func findTagAliasKey(name string) string {
+// Find key in tagMap (aliases)
+// If not found - return input value
+func tagAliasKey(name string) string {
 	for key, values := range config.AppConfig().TagMap {
-		if strings.EqualFold(name, key) {
+		if equals(name, key) {
 			// Tag matched the map key
 			return key
 		}
 
 		for _, value := range values {
-			if strings.EqualFold(name, value) || strings.EqualFold(name, truncateKeyPrefix(value)) {
+			if tagEquals(name, value) {
 				// Tag matched one of map values
 				return key
 			}
@@ -117,6 +109,16 @@ func findTagAliasKey(name string) string {
 	}
 
 	return name
+}
+
+// Key or truncated key equals
+func tagEquals(s, t string) bool {
+	return equals(s, t) || equals(s, truncateKeyPrefix(t))
+}
+
+// Short alias
+func equals(s, t string) bool {
+	return strings.EqualFold(s, t)
 }
 
 // Cut <group:> prefix if found
@@ -130,3 +132,69 @@ func truncateKeyPrefix(key string) string {
 
 	return string(runes[prefixEnding+1:])
 }
+
+//func test(s string) {
+//	fmt.Printf("-----input `%s`\n", s)
+//
+//	var (
+//		separators = &unicode.RangeTable{
+//			R16: []unicode.Range16{
+//				{0x002c, 0x002c, 1},
+//				{0x003b, 0x003b, 1},
+//			},
+//		}
+//		quotationMark = &unicode.RangeTable{
+//			R16: []unicode.Range16{
+//				{0x0022, 0x0022, 1},
+//			},
+//		}
+//		keywords         []string
+//		lastKeywordIndex int
+//		quotFound        bool
+//	)
+//
+//	for i, r := range []rune(s) {
+//		if unicode.In(r, separators) {
+//			if !quotFound {
+//				fmt.Printf("+++++separator pos %d, s: %s\n", i, s)
+//				keywords = append(keywords, strings.Trim(string([]rune(s)[lastKeywordIndex:i]), `,; "`))
+//				lastKeywordIndex = i
+//			}
+//
+//			continue
+//		}
+//
+//		if i == len(s)-1 {
+//			fmt.Printf("+++++separator pos %d, s: %s\n", i, s)
+//			keywords = append(keywords, strings.Trim(string([]rune(s)[lastKeywordIndex:len(s)]), `,; "`))
+//			lastKeywordIndex = i
+//
+//			continue
+//		}
+//
+//		if unicode.In(r, quotationMark) {
+//			quotFound = !quotFound
+//			continue
+//		}
+//		//fmt.Printf("*****debug: %d, %d\n", i, len(s))
+//	}
+//	fmt.Printf("=====output: %+v\n")
+//	for _, k := range keywords {
+//		fmt.Printf("=%+v\n", k)
+//	}
+//}
+//
+//func trimEmptyChunks(value []string) []string {
+//	var chunks []string
+//
+//	for _, chunk := range value {
+//		chunk = strings.Trim(chunk, " ")
+//		if len(chunk) == 0 {
+//			continue
+//		}
+//
+//		chunks = append(chunks, chunk)
+//	}
+//
+//	return chunks
+//}
