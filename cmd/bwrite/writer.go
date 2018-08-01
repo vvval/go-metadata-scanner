@@ -7,14 +7,14 @@ import (
 	"github.com/vvval/go-metadata-scanner/util"
 )
 
-func WriteFile(names []string, l metadata.Line, saveOriginals, appendValues bool) ([]byte, error) {
+func WriteFile(names []string, line metadata.Line, saveOriginals bool) ([]byte, error) {
 	var args []string
 
-	for tag, value := range l.Tags() {
+	for tag, value := range line.Tags() {
 		args = append(args, fmt.Sprintf("-%s=%v", tag, value))
 	}
 
-	if l.UseSeparator() {
+	if line.UseSeparator() {
 		args = append(args, fmt.Sprintf("-sep %s", metadata.Separator()))
 	}
 
@@ -28,5 +28,5 @@ func WriteFile(names []string, l metadata.Line, saveOriginals, appendValues bool
 
 	out, err := util.Run(config.AppConfig().ExifToolPath, args...)
 
-	return []byte(out), err
+	return out, err
 }

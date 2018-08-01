@@ -1,16 +1,33 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/vvval/go-metadata-scanner/cmd/bwrite"
-	"github.com/vvval/go-metadata-scanner/cmd/config"
 	"github.com/vvval/go-metadata-scanner/util"
+	"github.com/wolfy-j/goffli/utils"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 )
+
+//type Job struct {
+//	Line          metadata.Line
+//	Directory     string
+//	Filename      string
+//	SaveOriginals bool
+//	Append        bool
+//}
+
+var (
+	wg     sync.WaitGroup
+	jobs   chan bwrite.Job
+	status chan string
+	errors chan error
+)
+
+const handlers = 20
 
 func init() {
 	var bwriteCmd = &cobra.Command{
@@ -25,9 +42,64 @@ for proper mapping CSV data into appropriate metadata fields`,
 
 	rootCmd.AddCommand(bwriteCmd)
 	bwrite.InitFlags(bwriteCmd)
+
+	jobs = make(chan bwrite.Job)
+	status = make(chan string)
+	errors = make(chan error)
+
+	// worker pool
+	for i := 0; i < handlers; i++ {
+		go func(jobs <-chan bwrite.Job, status chan string, errors chan error) {
+			for {
+				select {
+				case job, ok := <-jobs:
+					if !ok {
+						return
+					}
+
+					res, err := work(job)
+					if err != nil {
+						errors <- err
+					} else {
+						status <- res
+					}
+
+					wg.Done()
+				}
+			}
+		}(jobs, status, errors)
+	}
+}
+
+func work(j bwrite.Job) (res string, err error) {
+	if j.Append {
+		//read from file and append to j.Line
+	}
+	result, err := bwrite.WriteFile(
+		filenameCandidates(j.Directory, j.Filename),
+		j.Line,
+		j.SaveOriginals,
+	)
+
+	return string(result), err
 }
 
 func bulkwrite(cmd *cobra.Command, args []string) {
+	go func() {
+		for {
+			select {
+			case _, ok := <-status:
+				if !ok {
+					return
+				}
+			case err, ok := <-errors:
+				if ok {
+					util.LogError("", err.Error())
+				}
+			}
+		}
+	}()
+
 	input := bwrite.Input()
 	file, err := openFile(input.Filename())
 	if err != nil {
@@ -40,29 +112,35 @@ func bulkwrite(cmd *cobra.Command, args []string) {
 		log.Fatalln(err)
 	}
 
+	//bwrite.ScanFile(reader, wg, jobs, input)
+
 	var columnsLineFound bool
 	var columns map[int]string
 
-	//var lines map[string]interface{}
-
+	var i int
 	for {
+		i++
 		line, err := reader.Read()
+
 		if err == io.EOF {
-			//readDone <- struct{}{}
 			break
 		}
 
 		if err != nil {
-			log.Fatalln(err)
-
-			break
+			utils.Printf("<red>Error on reading line %d: %s</reset>\n", i, err)
+			continue
 		}
 
 		if !columnsLineFound {
 			columnsLineFound = true
 			columns = bwrite.MapColumns(line)
 
-			fmt.Printf("%v\n", columns)
+			var cols []string
+			for _, col := range columns {
+				cols = append(cols, col)
+			}
+
+			utils.Log("Mapped columns are:", cols...)
 			continue
 		}
 
@@ -70,27 +148,28 @@ func bulkwrite(cmd *cobra.Command, args []string) {
 			continue
 		}
 
-		fmt.Printf("line %v\n", line)
-		result, err := bwrite.WriteFile(
-			filenameCandidates(input.Directory(), line[0]),
-			bwrite.MapLineToColumns(columns, line),
-			input.Originals(),
-			input.Append(),
-		)
-
-		if err != nil {
-			log.Fatalln(err)
-		} else {
-			fmt.Println(string(result))
+		wg.Add(1)
+		job := bwrite.Job{
+			Line:          bwrite.MapLineToColumns(columns, line),
+			Directory:     input.Directory(),
+			Filename:      line[0],
+			SaveOriginals: input.Originals(),
+			Append:        input.Append(),
 		}
+		jobs <- job
 	}
 
-	files, err := util.Scan(input.Directory(), config.AppConfig().Extensions)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	//files, err := util.Scan(input.Directory(), config.AppConfig().Extensions)
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
 
-	fmt.Printf("files %s\n", files)
+	wg.Wait()
+	close(jobs)
+	close(status)
+	close(errors)
+
+	utils.Log("Operation", "done")
 }
 
 func openFile(filename string) (*os.File, error) {

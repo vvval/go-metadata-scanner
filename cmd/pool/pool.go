@@ -1,4 +1,4 @@
-package cmd
+package pool
 
 import (
 	"fmt"
@@ -15,7 +15,6 @@ var (
 	jobs   chan string
 	status chan string
 	errors chan error
-	tick   chan time.Time
 )
 
 func init() {

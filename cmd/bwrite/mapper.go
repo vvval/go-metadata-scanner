@@ -36,18 +36,15 @@ func MapLineToColumns(columns map[int]string, input []string) metadata.Line {
 		}
 
 		for _, tag := range tags {
-			var val interface{}
-
-			switch {
-			case isListTag(tag):
-				val = util.SplitKeywords(value)
-			case isBoolTag(tag):
-				val = len(value) != 0
-			default:
-				val = value
+			if isBoolTag(tag) {
+				line.AddTag(tag, len(value) != 0)
+			} else if len(value) != 0 {
+				if isListTag(tag) {
+					line.AddTag(tag, util.SplitKeywords(value))
+				} else {
+					line.AddTag(tag, value)
+				}
 			}
-
-			line.AddTag(tag, val)
 		}
 	}
 
