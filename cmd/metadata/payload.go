@@ -6,28 +6,28 @@ import (
 
 const separator string = "<sep>"
 
-type Line struct {
+type Payload struct {
 	useSeparator bool
 	tags         map[string]interface{}
 }
 
-func NewLine() Line {
-	return Line{tags: map[string]interface{}{}}
+func New() Payload {
+	return Payload{tags: map[string]interface{}{}}
 }
 
 func Separator() string {
 	return separator
 }
 
-func (l *Line) UseSeparator() bool {
+func (l *Payload) UseSeparator() bool {
 	return l.useSeparator
 }
 
-func (l *Line) Tags() map[string]interface{} {
+func (l *Payload) Tags() map[string]interface{} {
 	return l.tags
 }
 
-func (l *Line) AddTag(tag string, value interface{}) {
+func (l *Payload) AddTag(tag string, value interface{}) {
 	l.tags[tag] = filter(value)
 
 	if useSeparator(value) {

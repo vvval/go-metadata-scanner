@@ -11,6 +11,10 @@ func (t tag) Map() []string {
 	return t.tags
 }
 
+func (t tag) Key() string {
+	return t.key
+}
+
 // Check if val is a key or one of key mapped values
 func (t tag) has(name string) bool {
 	if util.Equals(name, t.key) {

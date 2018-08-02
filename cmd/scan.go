@@ -57,7 +57,7 @@ to quickly create a Cobra application.`,
 		//a = append(a, m)
 
 		return
-		//input := bwrite.Input()
+		//input := write.Input()
 		//cmdArgs := []string{}
 		//
 		//for _, k := range config.AppConfig().Fields {

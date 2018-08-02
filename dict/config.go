@@ -26,6 +26,14 @@ func (conf config) Find(name string) (tag, bool) {
 	return notFound(name)
 }
 
+func (conf config) IsBoolean(tag tag) bool {
+	return oneOf(tag, conf.booleans)
+}
+
+func (conf config) IsList(tag tag) bool {
+	return oneOf(tag, conf.lists)
+}
+
 func found(name, key string, list []string) (tag, bool) {
 	t := tag{key, name, list}
 
@@ -36,14 +44,6 @@ func notFound(name string) (tag, bool) {
 	t := tag{original: name}
 
 	return t, false
-}
-
-func (conf config) IsBoolean(tag tag) bool {
-	return oneOf(tag, conf.booleans)
-}
-
-func (conf config) IsList(tag tag) bool {
-	return oneOf(tag, conf.lists)
 }
 
 func oneOf(tag tag, set []string) bool {

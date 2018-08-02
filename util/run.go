@@ -3,7 +3,7 @@ package util
 import (
 	"bytes"
 	"errors"
-	"github.com/wolfy-j/goffli/utils"
+	"github.com/vvval/go-metadata-scanner/log"
 	"os/exec"
 )
 
@@ -18,8 +18,7 @@ func Run(cmd string, args ...string) ([]byte, error) {
 		return []byte{}, errors.New(errBuffer.String())
 	}
 
-	args = append(args, string(res))
-	utils.Log(cmd, args...)
+	log.Command(cmd, args...)
 
 	return res, nil
 }

@@ -2,7 +2,7 @@ package dict
 
 import (
 	"github.com/imdario/mergo"
-	"github.com/vvval/go-metadata-scanner/util"
+	"github.com/vvval/go-metadata-scanner/log"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
@@ -29,7 +29,7 @@ func load() config {
 			return mergeConfigs(fileConfig, defaultConfig)
 		}
 
-		util.Error("Dict config read", err.Error())
+		log.Failure("Dict config read", err.Error())
 	}
 
 	return defaultConfig

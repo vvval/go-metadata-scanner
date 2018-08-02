@@ -1,4 +1,4 @@
-package bwrite
+package write
 
 import (
 	"github.com/spf13/cobra"
@@ -44,7 +44,7 @@ func (input input) Originals() bool {
 	return input.saveOriginals
 }
 
-var i = input{}
+var i input
 
 func InitFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&i.filename, "filename", "f", "", "Metadata source file name")

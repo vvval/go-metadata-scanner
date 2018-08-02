@@ -1,4 +1,4 @@
-package bwrite
+package write
 
 import (
 	"fmt"
@@ -7,14 +7,14 @@ import (
 	"github.com/vvval/go-metadata-scanner/util"
 )
 
-func WriteFile(names []string, line metadata.Line, saveOriginals bool) ([]byte, error) {
+func WriteFile(names []string, payload metadata.Payload, saveOriginals bool) ([]byte, error) {
 	var args []string
 
-	for tag, value := range line.Tags() {
+	for tag, value := range payload.Tags() {
 		args = append(args, fmt.Sprintf("-%s=%v", tag, value))
 	}
 
-	if line.UseSeparator() {
+	if payload.UseSeparator() {
 		args = append(args, fmt.Sprintf("-sep %s", metadata.Separator()))
 	}
 
