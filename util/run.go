@@ -12,8 +12,8 @@ func Run(cmd string, args ...string) ([]byte, error) {
 
 	errBuffer := new(bytes.Buffer)
 	command.Stderr = errBuffer
-
 	res, err := command.Output()
+
 	if err != nil {
 		return []byte{}, errors.New(errBuffer.String())
 	}

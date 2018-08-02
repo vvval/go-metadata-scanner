@@ -3,6 +3,7 @@ package bwrite
 import (
 	"github.com/vvval/go-metadata-scanner/cmd/config"
 	"github.com/vvval/go-metadata-scanner/cmd/metadata"
+	"github.com/vvval/go-metadata-scanner/dict"
 	"github.com/vvval/go-metadata-scanner/util"
 	"strings"
 )
@@ -21,6 +22,7 @@ import (
 // 		]
 func MapLineToColumns(columns map[int]string, input []string) metadata.Line {
 	line := metadata.NewLine()
+	d := dict.Get()
 
 	for index, value := range input {
 		key, ok := columns[index]
@@ -29,17 +31,17 @@ func MapLineToColumns(columns map[int]string, input []string) metadata.Line {
 			continue
 		}
 
-		tags, ok := (config.AppConfig().TagMap)[key]
-		if !ok {
+		t, found := d.Find(key)
+		if !found {
 			// Unknown tag, skip
 			continue
 		}
 
-		for _, tag := range tags {
-			if isBoolTag(tag) {
+		for _, tag := range t.Map() {
+			if d.IsBoolean(t) {
 				line.AddTag(tag, len(value) != 0)
 			} else if len(value) != 0 {
-				if isListTag(tag) {
+				if d.IsList(t) {
 					line.AddTag(tag, util.SplitKeywords(value))
 				} else {
 					line.AddTag(tag, value)
@@ -49,26 +51,6 @@ func MapLineToColumns(columns map[int]string, input []string) metadata.Line {
 	}
 
 	return line
-}
-
-func isListTag(name string) bool {
-	return oneOf(name, config.AppConfig().ListTags)
-}
-
-func isBoolTag(name string) bool {
-	return oneOf(name, config.AppConfig().BoolTags)
-}
-
-func oneOf(name string, set []string) bool {
-	key := tagAliasKey(name)
-	for _, tag := range set {
-		if tagEquals(name, tag) || tagEquals(key, tag) {
-			// Given name is a presented alias, or name (ignoring <group:> prefix)
-			return true
-		}
-	}
-
-	return false
 }
 
 // Map columns to a known tag map
@@ -129,69 +111,3 @@ func truncateKeyPrefix(key string) string {
 
 	return string(runes[prefixEnding+1:])
 }
-
-//func test(s string) {
-//	fmt.Printf("-----input `%s`\n", s)
-//
-//	var (
-//		separators = &unicode.RangeTable{
-//			R16: []unicode.Range16{
-//				{0x002c, 0x002c, 1},
-//				{0x003b, 0x003b, 1},
-//			},
-//		}
-//		quotationMark = &unicode.RangeTable{
-//			R16: []unicode.Range16{
-//				{0x0022, 0x0022, 1},
-//			},
-//		}
-//		keywords         []string
-//		lastKeywordIndex int
-//		quotFound        bool
-//	)
-//
-//	for i, r := range []rune(s) {
-//		if unicode.In(r, separators) {
-//			if !quotFound {
-//				fmt.Printf("+++++separator pos %d, s: %s\n", i, s)
-//				keywords = append(keywords, strings.Trim(string([]rune(s)[lastKeywordIndex:i]), `,; "`))
-//				lastKeywordIndex = i
-//			}
-//
-//			continue
-//		}
-//
-//		if i == len(s)-1 {
-//			fmt.Printf("+++++separator pos %d, s: %s\n", i, s)
-//			keywords = append(keywords, strings.Trim(string([]rune(s)[lastKeywordIndex:len(s)]), `,; "`))
-//			lastKeywordIndex = i
-//
-//			continue
-//		}
-//
-//		if unicode.In(r, quotationMark) {
-//			quotFound = !quotFound
-//			continue
-//		}
-//		//fmt.Printf("*****debug: %d, %d\n", i, len(s))
-//	}
-//	fmt.Printf("=====output: %+v\n")
-//	for _, k := range keywords {
-//		fmt.Printf("=%+v\n", k)
-//	}
-//}
-//
-//func trimEmptyChunks(value []string) []string {
-//	var chunks []string
-//
-//	for _, chunk := range value {
-//		chunk = strings.Trim(chunk, " ")
-//		if len(chunk) == 0 {
-//			continue
-//		}
-//
-//		chunks = append(chunks, chunk)
-//	}
-//
-//	return chunks
-//}
