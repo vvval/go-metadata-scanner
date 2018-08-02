@@ -2,10 +2,10 @@ package config
 
 import (
 	"github.com/imdario/mergo"
+	"github.com/vvval/go-metadata-scanner/scan"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
-	"os"
 )
 
 const configName string = "./config.yaml"
@@ -35,7 +35,7 @@ func defineConfig() config {
 		ExifToolPath: exifToolPath,
 	}
 
-	if configFileDetected() {
+	if scan.FileExists(configName) {
 		fileConfig, err := loadConfig()
 		if err != nil {
 			log.Fatalln(err)
@@ -45,12 +45,6 @@ func defineConfig() config {
 	}
 
 	return defaultConfig
-}
-
-func configFileDetected() bool {
-	_, err := os.Stat(configName)
-
-	return err == nil
 }
 
 // Read config file

@@ -11,6 +11,10 @@ func Candidates(filename string, files []string) {
 	var candidates []string
 
 	for _, file := range files {
+		if strings.EqualFold(file, filename) {
+			//the file
+		}
+
 		if strings.Index(file, filename) != -1 {
 			candidates = append(candidates, file)
 		}
