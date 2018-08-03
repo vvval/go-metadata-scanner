@@ -14,11 +14,10 @@ func Run(cmd string, args ...string) ([]byte, error) {
 	command.Stderr = errBuffer
 	res, err := command.Output()
 
+	log.Command(cmd, args...)
 	if err != nil {
 		return []byte{}, errors.New(errBuffer.String())
 	}
-
-	log.Command(cmd, args...)
 
 	return res, nil
 }

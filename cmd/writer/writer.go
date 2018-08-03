@@ -1,13 +1,13 @@
-package write
+package writer
 
 import (
 	"fmt"
-	"github.com/vvval/go-metadata-scanner/cmd/config"
 	"github.com/vvval/go-metadata-scanner/cmd/metadata"
+	"github.com/vvval/go-metadata-scanner/config"
 	"github.com/vvval/go-metadata-scanner/util"
 )
 
-func WriteFile(names []string, payload metadata.Payload, saveOriginals bool) ([]byte, error) {
+func WriteFile(name string, payload metadata.Payload, saveOriginals bool) ([]byte, error) {
 	var args []string
 
 	for tag, value := range payload.Tags() {
@@ -15,18 +15,16 @@ func WriteFile(names []string, payload metadata.Payload, saveOriginals bool) ([]
 	}
 
 	if payload.UseSeparator() {
-		args = append(args, fmt.Sprintf("-sep %s", metadata.Separator()))
+		args = append(args, "-sep", metadata.Separator())
 	}
 
 	if !saveOriginals {
 		args = append(args, "-overwrite_original")
 	}
 
-	for _, name := range names {
-		args = append(args, name)
-	}
+	args = append(args, name)
 
-	out, err := util.Run(config.AppConfig().ExifToolPath, args...)
+	out, err := util.Run(config.Get().ToolPath(), args...)
 
 	return out, err
 }

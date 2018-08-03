@@ -3,23 +3,19 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/vvval/go-metadata-scanner/cmd/config"
 	"github.com/vvval/go-metadata-scanner/cmd/metadata"
-	"github.com/vvval/go-metadata-scanner/cmd/write"
+	"github.com/vvval/go-metadata-scanner/cmd/writer"
+	"github.com/vvval/go-metadata-scanner/config"
 	"github.com/vvval/go-metadata-scanner/log"
 	"github.com/vvval/go-metadata-scanner/scan"
 	syslog "log"
 	"os"
-	"path/filepath"
 	"sync"
 )
 
 type Job struct {
-	Directory     string
-	Filename      string
-	Payload       metadata.Payload
-	SaveOriginals bool
-	Append        bool
+	filename string
+	payload  metadata.Payload
 }
 
 var (
@@ -27,35 +23,43 @@ var (
 	jobs chan *Job
 )
 
-const handlers = 20
+const handlers int = 20
 
 var files []string
 
 func init() {
-	var writeCmd = &cobra.Command{
+	var cmd = &cobra.Command{
 		Use:   "write",
-		Short: "Read metadata from file and write to images",
-		Long: `Read metadata from file and write to images.
-Input file should be a CSV file with comma-separated fields.
+		Short: "Read metadata from file and writer to images",
+		Long: `Read metadata from file and writer to images.
+Input file should be a CSV file with comma-separated fields (or pass custom separator via "s" flag).
 First column should be reserved for file names, its name is omitted.
-Other columns should be named as keywords in a config.yaml tagmap section provided
+Other columns should be named as keywords in a dict.yaml maps section provided
 for proper mapping CSV data into appropriate metadata fields`,
 		Run: execute,
 	}
 
-	files, err := scan.Dir(write.Input().Directory(), config.AppConfig().Extensions)
+	rootCmd.AddCommand(cmd)
+	writer.InitFlags(cmd)
+
+	files = scanDir()
+	initPool(handlers)
+}
+
+func scanDir() []string {
+	result, err := scan.Dir(writer.Input().Directory(), config.Get().Extensions())
 	if err != nil {
 		syslog.Fatalln(err)
 	}
-	fmt.Printf("%+v\n", files)
 
-	rootCmd.AddCommand(writeCmd)
-	write.InitFlags(writeCmd)
+	return result
+}
 
+func initPool(poolSize int) {
 	jobs = make(chan *Job)
 
 	// worker pool
-	for i := 0; i < handlers; i++ {
+	for i := 0; i < poolSize; i++ {
 		go func(jobs chan *Job) {
 			for {
 				select {
@@ -64,11 +68,11 @@ for proper mapping CSV data into appropriate metadata fields`,
 						return
 					}
 
-					res, err := work(job, &files)
+					res, err := work(job)
 					if err != nil {
 						log.Failure("", err.Error())
 					} else {
-						log.Success("Processing", res)
+						log.Success("Writing", res)
 					}
 
 					wg.Done()
@@ -78,45 +82,45 @@ for proper mapping CSV data into appropriate metadata fields`,
 	}
 }
 
-func work(j *Job, files *[]string) (res string, err error) {
-	if j.Append {
-		//read from file and append to j.Payload
+func work(job *Job) (res string, err error) {
+	input := writer.Input()
+
+	if input.Append() {
+		//read from file and append to job.payload
 	}
 
-	scan.Candidates(j.Filename, *files)
+	filename, found := scan.Candidates(job.filename, files, config.Get().Extensions())
 
-	result, err := write.WriteFile(
-		filenameCandidates(j.Directory, j.Filename),
-		j.Payload,
-		j.SaveOriginals,
+	if !found {
+		return "", fmt.Errorf("no file candidate for `%s`", job.filename)
+	}
+
+	result, err := writer.WriteFile(
+		filename,
+		job.payload,
+		input.Originals(),
 	)
 
 	return string(result), err
 }
 
 func execute(cmd *cobra.Command, args []string) {
-	input := write.Input()
+	input := writer.Input()
 	file, err := openFile(input.Filename())
 	if err != nil {
 		syslog.Fatalln(err)
 	}
 	defer file.Close()
 
-	write.Read(file, input.Separator(), func(filename string, payload metadata.Payload) {
+	writer.Read(file, input.Separator(), func(filename string, payload metadata.Payload) {
 		wg.Add(1)
-		jobs <- &Job{
-			Directory:     input.Directory(),
-			Filename:      filename,
-			Payload:       payload,
-			SaveOriginals: input.Originals(),
-			Append:        input.Append(),
-		}
+		jobs <- &Job{filename, payload}
 	})
 
 	wg.Wait()
 	close(jobs)
 
-	log.Log("Operation", "done")
+	log.Log("Writing", "done")
 }
 
 func openFile(filename string) (*os.File, error) {
@@ -127,12 +131,3 @@ func openFile(filename string) (*os.File, error) {
 
 	return file, nil
 }
-
-func filenameCandidates(dir, name string) []string {
-	return []string{filepath.Join(dir, name)}
-}
-
-//files, err := util.Read(input.Directory(), config.AppConfig().Extensions)
-//if err != nil {
-//	log.Fatalln(err)
-//}

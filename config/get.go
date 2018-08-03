@@ -1,44 +1,39 @@
-package dict
+package config
 
 import (
 	"github.com/imdario/mergo"
 	"github.com/vvval/go-metadata-scanner/log"
+	"github.com/vvval/go-metadata-scanner/scan"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"os"
 )
 
-var conf config
+const configFilename string = "./config.yaml"
+const toolPath string = "exiftool"
 
-const configFilename string = "./dict.yaml"
+var conf config
 
 func Get() config {
 	return conf
 }
 
 func init() {
-	conf = load()
+	conf = load(config{
+		toolPath: toolPath,
+	})
 }
 
-func load() config {
-	defaultConfig := config{}
-
-	if fileDetected() {
+func load(defaultConfig config) config {
+	if scan.FileExists(configFilename) {
 		fileConfig, err := loadFile()
 		if err == nil {
 			return mergeConfigs(fileConfig, defaultConfig)
 		}
 
-		log.Failure("Dict config read", err.Error())
+		log.Failure("App config read", err.Error())
 	}
 
 	return defaultConfig
-}
-
-func fileDetected() bool {
-	_, err := os.Stat(configFilename)
-
-	return err == nil
 }
 
 // Read file into config
@@ -50,16 +45,16 @@ func loadFile() (config, error) {
 
 	//empty struct to fill data into
 	conf := struct {
-		Known    map[string][]string
-		Booleans []string
-		Lists    []string
+		ToolPath   string   `yaml:"exiftool"`
+		Extensions []string `yaml:"extensions"`
+		Fields     []string `yaml:"fields"`
 	}{}
 	err = yaml.Unmarshal([]byte(data), &conf)
 	if err != nil {
 		return config{}, err
 	}
 
-	return config{conf.Known, conf.Booleans, conf.Lists}, nil
+	return config{conf.ToolPath, conf.Extensions, conf.Fields}, nil
 }
 
 // Merge default config and file config.

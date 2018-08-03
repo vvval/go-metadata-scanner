@@ -1,4 +1,4 @@
-package write
+package writer
 
 import (
 	"github.com/spf13/cobra"

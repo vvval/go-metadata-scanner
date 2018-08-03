@@ -1,4 +1,4 @@
-package write
+package writer
 
 import (
 	"encoding/csv"
@@ -37,7 +37,7 @@ func Read(file *os.File, sep rune, callback func(filename string, payload metada
 				cols = append(cols, col)
 			}
 
-			log.Success("Mapped columns are:", cols...)
+			log.Log("Mapped columns are:", cols...)
 			continue
 		}
 

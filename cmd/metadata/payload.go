@@ -1,6 +1,7 @@
 package metadata
 
 import (
+	"strconv"
 	"strings"
 )
 
@@ -38,7 +39,7 @@ func (l *Payload) AddTag(tag string, value interface{}) {
 func filter(value interface{}) interface{} {
 	arr, ok := value.([]string)
 	if ok {
-		return escape(strings.Join(arr, separator))
+		return quote(strings.Join(arr, separator))
 	}
 
 	str, ok := value.(string)
@@ -51,18 +52,17 @@ func filter(value interface{}) interface{} {
 			return false
 		}
 
-		return escape(str)
+		return quote(str)
 	}
 
 	return value
 }
 
-func escape(intput string) string {
-	if strings.Index(intput, " ") > 0 {
-		return `"` + intput + `"`
+func quote(s string) string {
+	if strconv.CanBackquote(s) {
+		return "`" + s + "`"
 	}
-
-	return intput
+	return strconv.Quote(s)
 }
 
 func useSeparator(value interface{}) bool {

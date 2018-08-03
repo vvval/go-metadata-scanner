@@ -1,44 +1,47 @@
 package scan
 
 import (
-	"fmt"
-	"log"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
-func Candidates(filename string, files []string) {
-	var candidates []string
+func Candidates(filename string, files []string, extensions []string) (string, bool) {
+	endings := extEndings(filename, extensions)
+	var candidates = make(map[string]bool)
+
+	reg := &regexp.Regexp{}
 
 	for _, file := range files {
-		if strings.EqualFold(file, filename) {
-			//the file
-		}
+		for _, ending := range endings {
+			if strings.EqualFold(file, ending) {
+				return ending, true
+			}
 
-		if strings.Index(file, filename) != -1 {
-			candidates = append(candidates, file)
+			reg = regexp.MustCompile("^(([a-zA-Z]{1,}_)?0*)?" + regexp.QuoteMeta(filepath.Base(ending)) + "$")
+			if reg.MatchString(filepath.Base(file)) {
+				candidates[file] = true
+			}
 		}
 	}
 
-	fmt.Printf("candidates: %v = %+v\n", filename, candidates)
+	var values []string
+	for k := range candidates {
+		values = append(values, k)
+	}
+
+	if len(values) == 1 {
+		return values[0], true
+	}
+
+	return "", false
 }
 
-//var files map[string]string
-
-func ScanDir(directory string, extensions []string) map[string]string {
-	res, err := Dir(directory, extensions)
-	if err != nil {
-		log.Fatalln(err)
+func extEndings(filename string, extensions []string) []string {
+	ends := []string{filename}
+	for _, extension := range extensions {
+		ends = append(ends, filename+"."+extension)
 	}
 
-	files := make(map[string]string)
-	for _, file := range res {
-		files[file] = filepath.Base(file)
-	}
-
-	return files
-}
-
-func filenameCandidates(dir, name string) []string {
-	return []string{filepath.Join(dir, name)}
+	return ends
 }

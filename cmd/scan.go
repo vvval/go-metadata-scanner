@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/vvval/go-metadata-scanner/cmd/config"
+	"github.com/vvval/go-metadata-scanner/config"
 	"log"
 	"os/exec"
 	"reflect"
@@ -23,7 +23,7 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		//var m = map[string]interface{}{}
 		//var a = []interface{}{}
-		execCmd := exec.Command(config.AppConfig().ExifToolPath, "-j", "-Keywords", "keywords/test.jpg")
+		execCmd := exec.Command(config.Get().ToolPath(), "-j", "-Keywords", "keywords/test.jpg")
 		result, err := execCmd.Output()
 		if err != nil {
 			log.Fatal(err)
@@ -57,16 +57,16 @@ to quickly create a Cobra application.`,
 		//a = append(a, m)
 
 		return
-		//input := write.Input()
+		//input := writer.Input()
 		//cmdArgs := []string{}
 		//
-		//for _, k := range config.AppConfig().Fields {
+		//for _, k := range config.Get().Fields {
 		//	cmdArgs = append(cmdArgs, fmt.Sprintf("-%s:all", k))
 		//}
-		//cmdArgs = append(cmdArgs, "-j", "-G", input.Filename())
+		//cmdArgs = append(cmdArgs, "-j", "-G", input.filename())
 		//
 		//fmt.Println("cmd args: %+v\n", cmdArgs)
-		//execCmd := exec.Command(config.AppConfig().ExifToolPath, cmdArgs...)
+		//execCmd := exec.Command(config.Get().ToolPath, cmdArgs...)
 		//result, err := execCmd.Output()
 		//fmt.Println(string(result))
 		//if err != nil {
