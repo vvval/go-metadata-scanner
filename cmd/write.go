@@ -36,7 +36,7 @@ Input file should be a CSV file with comma-separated fields (or pass custom sepa
 First column should be reserved for file names, its name is omitted.
 Other columns should be named as keywords in a dict.yaml maps section provided
 for proper mapping CSV data into appropriate metadata fields`,
-		Run: execute,
+		Run: writeHandler,
 	}
 
 	rootCmd.AddCommand(cmd)
@@ -104,7 +104,7 @@ func work(job *Job) (res string, err error) {
 	return string(result), err
 }
 
-func execute(cmd *cobra.Command, args []string) {
+func writeHandler(cmd *cobra.Command, args []string) {
 	input := writer.Input()
 	file, err := openFile(input.Filename())
 	if err != nil {

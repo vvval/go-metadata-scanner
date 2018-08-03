@@ -36,12 +36,13 @@ func MapPayload(columns map[int]string, input []string) metadata.Payload {
 			continue
 		}
 
+		//todo replace with getLists and getBooleans
 		for _, tag := range t.Map() {
-			if d.IsBoolean(t) {
-				payload.AddTag(tag, len(value) != 0)
+			if d.IsBoolean(t.Key(), tag) {
+				payload.AddBool(tag, len(value) != 0)
 			} else if len(value) != 0 {
-				if d.IsList(t) {
-					payload.AddTag(tag, util.SplitKeywords(value))
+				if d.IsList(t.Key(), tag) {
+					payload.AddList(tag, util.SplitKeywords(value))
 				} else {
 					payload.AddTag(tag, value)
 				}
@@ -55,7 +56,7 @@ func MapPayload(columns map[int]string, input []string) metadata.Payload {
 // Map columns to a known tag map
 // Skip 1st column (dedicated to a file names) and empty columns
 func ReadColumns(columns []string) map[int]string {
-	conf := dict.Get()
+	d := dict.Get()
 	output := map[int]string{}
 	for i, column := range columns {
 		column = strings.Trim(column, " ")
@@ -64,13 +65,13 @@ func ReadColumns(columns []string) map[int]string {
 			continue
 		}
 
-		tag, found := conf.Find(column)
+		tag, found := d.Find(column)
 		if !found {
 			// Skip not found columns
 			continue
 		}
 
-		output[i] = tag.Key()
+		output[i] = tag.Original()
 	}
 
 	return output

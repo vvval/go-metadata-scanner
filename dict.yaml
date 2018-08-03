@@ -18,6 +18,7 @@ known:
   location: ["IPTC:Sub-location","XMP:Location"]
   instructions: ["IPTC:SpecialInstructions","XMP:Instructions"]
   terms: ["XMP:UsageTerms"]
+  captionWriter: ["IPTC:Writer-Editor","XMP:CaptionWriter"]
   creator: ["EXIF:Artist","IPTC:By-line","XMP:Creator"]
   creatorTitle: ["IPTC:By-lineTitle","XMP:AuthorsPosition"]
   creatorAddress: ["XMP:CreatorAddress"]
@@ -38,4 +39,7 @@ booleans: ["XMP:Marked"]
 #known list-value tags
 #all tags should be either a known tag keys or written in standard format <GROUP:TagName>
 lists: ["creator","keywords","creatorTitle","personInImage","copyrightOwner",
-        "IPTC:Contact","IPTC:Writer-Editor","XMP:Contributor","XMP:TagsList","XMP:Publisher"]
+        "IPTC:Contact",
+        "IPTC:Writer-Editor",
+#        "captionWriter",
+        "XMP:Contributor","XMP:TagsList","XMP:Publisher"]

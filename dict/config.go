@@ -11,14 +11,34 @@ type config struct {
 }
 
 func (conf config) Find(name string) (tag, bool) {
+	if tag, found := inKnown(name); found {
+		return tag, found
+	}
+
+	for _, b := range conf.booleans {
+		if strings.EqualFold(b, name) {
+			return found("", name, []string{name})
+		}
+	}
+
+	for _, l := range conf.lists {
+		if strings.EqualFold(l, name) {
+			return found("", name, []string{name})
+		}
+	}
+
+	return notFound(name)
+}
+
+func inKnown(name string) (tag, bool) {
 	for key, list := range conf.known {
 		if strings.EqualFold(key, name) {
-			return found(name, key, list)
+			return found(key, name, list)
 		}
 
 		for _, val := range list {
 			if tagEquals(val, name) {
-				return found(name, key, list)
+				return found(key, name, list)
 			}
 		}
 	}
@@ -26,15 +46,7 @@ func (conf config) Find(name string) (tag, bool) {
 	return notFound(name)
 }
 
-func (conf config) IsBoolean(tag tag) bool {
-	return oneOf(tag, conf.booleans)
-}
-
-func (conf config) IsList(tag tag) bool {
-	return oneOf(tag, conf.lists)
-}
-
-func found(name, key string, list []string) (tag, bool) {
+func found(key, name string, list []string) (tag, bool) {
 	t := tag{key, name, list}
 
 	return t, true
@@ -46,9 +58,17 @@ func notFound(name string) (tag, bool) {
 	return t, false
 }
 
-func oneOf(tag tag, set []string) bool {
+func (conf config) IsBoolean(key, tag string) bool {
+	return oneOf(key, tag, conf.booleans)
+}
+
+func (conf config) IsList(key, tag string) bool {
+	return oneOf(key, tag, conf.lists)
+}
+
+func oneOf(key, tag string, set []string) bool {
 	for _, val := range set {
-		if tag.has(val) {
+		if strings.EqualFold(tag, val) || strings.EqualFold(key, val) {
 			return true
 		}
 	}

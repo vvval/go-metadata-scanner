@@ -32,12 +32,7 @@ func Read(file *os.File, sep rune, callback func(filename string, payload metada
 			columnsFound = true
 			columns = ReadColumns(row)
 
-			var cols []string
-			for _, col := range columns {
-				cols = append(cols, col)
-			}
-
-			log.Log("Mapped columns are:", cols...)
+			logColumns(columns)
 			continue
 		}
 
@@ -59,4 +54,13 @@ func reader(file *os.File, sep rune) *csv.Reader {
 
 func skipLine(line []string) bool {
 	return len(line) == 0 || len(line[0]) == 0
+}
+
+func logColumns(columns map[int]string) {
+	var cols []string
+	for _, col := range columns {
+		cols = append(cols, col)
+	}
+
+	log.Log("Columns are:", cols...)
 }

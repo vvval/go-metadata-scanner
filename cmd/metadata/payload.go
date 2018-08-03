@@ -1,7 +1,6 @@
 package metadata
 
 import (
-	"strconv"
 	"strings"
 )
 
@@ -28,22 +27,31 @@ func (l *Payload) Tags() map[string]interface{} {
 	return l.tags
 }
 
-func (l *Payload) AddTag(tag string, value interface{}) {
-	l.tags[tag] = filter(value)
+func (l *Payload) AddBool(tag string, value bool) {
+	l.tags[tag] = value
+}
 
-	if useSeparator(value) {
-		l.useSeparator = true
+func (l *Payload) AddList(tag string, value []string) {
+	var m = make(map[string]string)
+	for _, v := range value {
+		m[v] = v
 	}
+
+	var arr []string
+	for v := range m {
+		arr = append(arr, v)
+	}
+
+	l.tags[tag] = strings.Join(arr, separator)
+	l.useSeparator = true
+}
+
+func (l *Payload) AddTag(tag string, value string) {
+	l.tags[tag] = filter(value)
 }
 
 func filter(value interface{}) interface{} {
-	arr, ok := value.([]string)
-	if ok {
-		return quote(strings.Join(arr, separator))
-	}
-
-	str, ok := value.(string)
-	if ok {
+	if str, ok := value.(string); ok {
 		if strings.EqualFold(str, "true") {
 			return true
 		}
@@ -52,21 +60,8 @@ func filter(value interface{}) interface{} {
 			return false
 		}
 
-		return quote(str)
+		return str
 	}
 
 	return value
-}
-
-func quote(s string) string {
-	if strconv.CanBackquote(s) {
-		return "`" + s + "`"
-	}
-	return strconv.Quote(s)
-}
-
-func useSeparator(value interface{}) bool {
-	_, ok := value.([]string)
-
-	return ok
 }

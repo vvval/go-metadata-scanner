@@ -1,6 +1,7 @@
 package writer
 
 import (
+	"errors"
 	"fmt"
 	"github.com/vvval/go-metadata-scanner/cmd/metadata"
 	"github.com/vvval/go-metadata-scanner/config"
@@ -12,6 +13,11 @@ func WriteFile(name string, payload metadata.Payload, saveOriginals bool) ([]byt
 
 	for tag, value := range payload.Tags() {
 		args = append(args, fmt.Sprintf("-%s=%v", tag, value))
+	}
+
+	if len(args) == 0 {
+		//todo ignore at mapping stage
+		return []byte(""), errors.New("no args passed")
 	}
 
 	if payload.UseSeparator() {
