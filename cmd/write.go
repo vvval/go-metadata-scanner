@@ -20,12 +20,12 @@ type Job struct {
 }
 
 var (
-	wg       sync.WaitGroup
-	jobs     chan *Job
-	files    []string
-	skipFile = errors.New("skipFile")
-	noFile   = errors.New("noFile")
-	input    = writeCommand.Input{}
+	wg          sync.WaitGroup
+	jobs        chan *Job
+	files       []string
+	skipFileErr = errors.New("skipFileErr")
+	noFileErr   = errors.New("noFileErr")
+	input       writeCommand.Input
 )
 
 const handlers int = 20
@@ -45,7 +45,7 @@ for proper mapping CSV data into appropriate metadata fields`,
 	rootCmd.AddCommand(cmd)
 	writeCommand.FillInput(cmd, &input)
 
-	initPool(cmd, handlers)
+	initPool(handlers)
 }
 
 func writeHandler(cmd *cobra.Command, args []string) {
@@ -55,7 +55,7 @@ func writeHandler(cmd *cobra.Command, args []string) {
 	}
 	defer file.Close()
 
-	files = scanDir(input)
+	files = scanDir(input, config.Get().Extensions())
 
 	writeCommand.ReadFile(file, input.Separator(), func(filename string, payload metadata.Payload) {
 		wg.Add(1)
@@ -68,8 +68,8 @@ func writeHandler(cmd *cobra.Command, args []string) {
 	log.Log("Writing", "done")
 }
 
-func scanDir(input writeCommand.Input) []string {
-	result, err := scan.Dir(input.Directory(), config.Get().Extensions())
+func scanDir(input writeCommand.Input, extensions []string) []string {
+	result, err := scan.Dir(input.Directory(), extensions)
 	if err != nil {
 		syslog.Fatalln(err)
 	}
@@ -77,7 +77,7 @@ func scanDir(input writeCommand.Input) []string {
 	return result
 }
 
-func initPool(cmd *cobra.Command, poolSize int) {
+func initPool(poolSize int) {
 	jobs = make(chan *Job)
 
 	// worker pool
@@ -107,11 +107,11 @@ func work(job *Job, input writeCommand.Input) (res string, err error) {
 
 	filename, found := scan.Candidates(job.filename, files, config.Get().Extensions())
 	if !found {
-		return "", noFile
+		return "", noFileErr
 	}
 
 	if len(job.payload.Tags()) == 0 {
-		return "", skipFile
+		return "", skipFileErr
 	}
 
 	result, err := writeCommand.WriteFile(
@@ -123,14 +123,14 @@ func work(job *Job, input writeCommand.Input) (res string, err error) {
 	return string(result), err
 }
 
-func logWork(res, filename string, err error) {
-	if err == skipFile {
+func logWork(result, filename string, err error) {
+	if err == skipFileErr {
 		log.Debug("Skip", fmt.Sprintf("no payload found for `%s`", filename))
-	} else if err == noFile {
+	} else if err == noFileErr {
 		log.Debug("Skip", fmt.Sprintf("no files candidate for `%s`", filename))
 	} else if err != nil {
 		log.Failure("", err.Error())
-	} else if len(res) != 0 {
-		log.Success("Success", res)
+	} else if len(result) != 0 {
+		log.Success("Success", result)
 	}
 }
