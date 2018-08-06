@@ -1,15 +1,16 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/vvval/go-metadata-scanner/cmd/metadata"
-	"github.com/vvval/go-metadata-scanner/cmd/writer"
+	"github.com/vvval/go-metadata-scanner/cmd/writeCommand"
 	"github.com/vvval/go-metadata-scanner/config"
 	"github.com/vvval/go-metadata-scanner/log"
 	"github.com/vvval/go-metadata-scanner/scan"
+	"github.com/vvval/go-metadata-scanner/util"
 	syslog "log"
-	"os"
 	"sync"
 )
 
@@ -19,13 +20,15 @@ type Job struct {
 }
 
 var (
-	wg   sync.WaitGroup
-	jobs chan *Job
+	wg       sync.WaitGroup
+	jobs     chan *Job
+	files    []string
+	skipFile = errors.New("skipFile")
+	noFile   = errors.New("noFile")
+	input    = writeCommand.Input{}
 )
 
 const handlers int = 20
-
-var files []string
 
 func init() {
 	var cmd = &cobra.Command{
@@ -40,14 +43,33 @@ for proper mapping CSV data into appropriate metadata fields`,
 	}
 
 	rootCmd.AddCommand(cmd)
-	writer.InitFlags(cmd)
+	writeCommand.FillInput(cmd, &input)
 
-	files = scanDir()
-	initPool(handlers)
+	initPool(cmd, handlers)
 }
 
-func scanDir() []string {
-	result, err := scan.Dir(writer.Input().Directory(), config.Get().Extensions())
+func writeHandler(cmd *cobra.Command, args []string) {
+	file, err := util.OpenReadonlyFile(input.Filename())
+	if err != nil {
+		syslog.Fatalln(err)
+	}
+	defer file.Close()
+
+	files = scanDir(input)
+
+	writeCommand.ReadFile(file, input.Separator(), func(filename string, payload metadata.Payload) {
+		wg.Add(1)
+		jobs <- &Job{filename, payload}
+	})
+
+	wg.Wait()
+	close(jobs)
+
+	log.Log("Writing", "done")
+}
+
+func scanDir(input writeCommand.Input) []string {
+	result, err := scan.Dir(input.Directory(), config.Get().Extensions())
 	if err != nil {
 		syslog.Fatalln(err)
 	}
@@ -55,7 +77,7 @@ func scanDir() []string {
 	return result
 }
 
-func initPool(poolSize int) {
+func initPool(cmd *cobra.Command, poolSize int) {
 	jobs = make(chan *Job)
 
 	// worker pool
@@ -68,12 +90,8 @@ func initPool(poolSize int) {
 						return
 					}
 
-					res, err := work(job)
-					if err != nil {
-						log.Failure("", err.Error())
-					} else {
-						log.Success("Writing", res)
-					}
+					res, err := work(job, input)
+					logWork(res, job.filename, err)
 
 					wg.Done()
 				}
@@ -82,20 +100,21 @@ func initPool(poolSize int) {
 	}
 }
 
-func work(job *Job) (res string, err error) {
-	input := writer.Input()
-
+func work(job *Job, input writeCommand.Input) (res string, err error) {
 	if input.Append() {
 		//read from file and append to job.payload
 	}
 
 	filename, found := scan.Candidates(job.filename, files, config.Get().Extensions())
-
 	if !found {
-		return "", fmt.Errorf("no file candidate for `%s`", job.filename)
+		return "", noFile
 	}
 
-	result, err := writer.WriteFile(
+	if len(job.payload.Tags()) == 0 {
+		return "", skipFile
+	}
+
+	result, err := writeCommand.WriteFile(
 		filename,
 		job.payload,
 		input.Originals(),
@@ -104,30 +123,14 @@ func work(job *Job) (res string, err error) {
 	return string(result), err
 }
 
-func writeHandler(cmd *cobra.Command, args []string) {
-	input := writer.Input()
-	file, err := openFile(input.Filename())
-	if err != nil {
-		syslog.Fatalln(err)
+func logWork(res, filename string, err error) {
+	if err == skipFile {
+		log.Debug("Skip", fmt.Sprintf("no payload found for `%s`", filename))
+	} else if err == noFile {
+		log.Debug("Skip", fmt.Sprintf("no files candidate for `%s`", filename))
+	} else if err != nil {
+		log.Failure("", err.Error())
+	} else if len(res) != 0 {
+		log.Success("Success", res)
 	}
-	defer file.Close()
-
-	writer.Read(file, input.Separator(), func(filename string, payload metadata.Payload) {
-		wg.Add(1)
-		jobs <- &Job{filename, payload}
-	})
-
-	wg.Wait()
-	close(jobs)
-
-	log.Log("Writing", "done")
-}
-
-func openFile(filename string) (*os.File, error) {
-	file, err := os.OpenFile(filename, os.O_RDONLY, os.ModePerm)
-	if err != nil {
-		return nil, err
-	}
-
-	return file, nil
 }

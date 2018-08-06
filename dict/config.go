@@ -10,7 +10,7 @@ type config struct {
 	lists    []string
 }
 
-func (conf config) Find(name string) (tag, bool) {
+func (conf config) Find(name string) (Tag, bool) {
 	if tag, found := inKnown(name); found {
 		return tag, found
 	}
@@ -30,7 +30,7 @@ func (conf config) Find(name string) (tag, bool) {
 	return notFound(name)
 }
 
-func inKnown(name string) (tag, bool) {
+func inKnown(name string) (Tag, bool) {
 	for key, list := range conf.known {
 		if strings.EqualFold(key, name) {
 			return found(key, name, list)
@@ -46,14 +46,14 @@ func inKnown(name string) (tag, bool) {
 	return notFound(name)
 }
 
-func found(key, name string, list []string) (tag, bool) {
-	t := tag{key, name, list}
+func found(key, name string, list []string) (Tag, bool) {
+	t := Tag{key, name, list}
 
 	return t, true
 }
 
-func notFound(name string) (tag, bool) {
-	t := tag{original: name}
+func notFound(name string) (Tag, bool) {
+	t := Tag{original: name}
 
 	return t, false
 }

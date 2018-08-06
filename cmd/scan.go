@@ -67,7 +67,7 @@ func scanHandler(cmd *cobra.Command, args []string) {
 	//a = append(a, m)
 
 	return
-	//input := writer.Input()
+	//input := writeCommand.Input()
 	//cmdArgs := []string{}
 	//
 	//for _, k := range config.Get().Fields {

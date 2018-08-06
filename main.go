@@ -12,6 +12,7 @@ func main() {
 	log.Visibility.Command = true
 	log.Visibility.Success = true
 	log.Visibility.Failure = true
+	log.Visibility.Debug = true
 
 	cmd.Execute()
 }

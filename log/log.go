@@ -6,7 +6,15 @@ import (
 )
 
 var Visibility struct {
-	Command, Success, Failure bool
+	Command, Success, Failure, Debug bool
+}
+
+func Debug(name string, args ...string) {
+	if !Visibility.Debug {
+		return
+	}
+
+	utils.Log(name, args...)
 }
 
 func Log(name string, args ...string) {

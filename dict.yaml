@@ -6,7 +6,7 @@ known:
   event: ["XMP:Event"]
   dateCreated: ["IPTC:DateCreated","XMP:DateCreated"]
   copyright: ["EXIF:Copyright","IPTC:CopyrightNotice","XMP:Rights"]
-  copyrightOwner: ["XMP:Owner"]
+  copyrightOwner: ["XMP:Owner","XMP:CopyrightOwnerName"]
   copyrighted: ["XMP:Marked"]
   description: ["EXIF:ImageDescription","IPTC:Caption-Abstract","XMP:Description"]
   personInImage: ["XMP:PersonInImage","XMP:People"]

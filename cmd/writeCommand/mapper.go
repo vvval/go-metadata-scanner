@@ -1,4 +1,4 @@
-package writer
+package writeCommand
 
 import (
 	"github.com/vvval/go-metadata-scanner/cmd/metadata"
@@ -19,20 +19,14 @@ import (
 // 			"IPTC:description1":"some description",
 // 			"XMP:description2":"some description"
 // 		]
-func MapPayload(columns map[int]string, input []string) metadata.Payload {
+func mapPayload(columns map[int]dict.Tag, input []string) metadata.Payload {
 	payload := metadata.New()
 	d := dict.Get()
 
 	for index, value := range input {
-		key, ok := columns[index]
+		t, ok := columns[index]
 		if !ok {
 			// Unmapped key, skip
-			continue
-		}
-
-		t, found := d.Find(key)
-		if !found {
-			// Unknown tag, skip
 			continue
 		}
 
@@ -55,9 +49,9 @@ func MapPayload(columns map[int]string, input []string) metadata.Payload {
 
 // Map columns to a known tag map
 // Skip 1st column (dedicated to a file names) and empty columns
-func ReadColumns(columns []string) map[int]string {
+func readColumns(columns []string) map[int]dict.Tag {
 	d := dict.Get()
-	output := map[int]string{}
+	output := map[int]dict.Tag{}
 	for i, column := range columns {
 		column = strings.Trim(column, " ")
 		if i == 0 || len(column) == 0 {
@@ -71,7 +65,7 @@ func ReadColumns(columns []string) map[int]string {
 			continue
 		}
 
-		output[i] = tag.Original()
+		output[i] = tag
 	}
 
 	return output

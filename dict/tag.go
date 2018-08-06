@@ -1,18 +1,18 @@
 package dict
 
-type tag struct {
+type Tag struct {
 	key, original string
 	tags          []string
 }
 
-func (t tag) Map() []string {
+func (t Tag) Map() []string {
 	return t.tags
 }
 
-func (t tag) Key() string {
+func (t Tag) Key() string {
 	return t.key
 }
 
-func (t tag) Original() string {
+func (t Tag) Original() string {
 	return t.original
 }

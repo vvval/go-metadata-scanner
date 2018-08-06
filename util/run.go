@@ -7,7 +7,7 @@ import (
 	"os/exec"
 )
 
-func Run(cmd string, args ...string) ([]byte, error) {
+func RunCommand(cmd string, args ...string) ([]byte, error) {
 	command := exec.Command(cmd, args...)
 
 	errBuffer := new(bytes.Buffer)
