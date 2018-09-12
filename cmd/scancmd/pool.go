@@ -5,9 +5,19 @@ import (
 	"sync"
 )
 
-func CreatePool(wg *sync.WaitGroup, poolSize int, files <-chan []string, callback func(files []string) ([]byte, error)) {
+// Create a pool of defined size.
+// Read files input chan (files chunk).
+// Execute a callback function to read files chunk
+// Parse read result and put into output chan (each file separately)
+func CreatePool(
+	wg *sync.WaitGroup,
+	poolSize int,
+	chunks <-chan Chunk,
+	scanFilesCallback func(files Chunk) ([]byte, error),
+	output chan<- FileData,
+) {
 	for i := 0; i < poolSize; i++ {
-		go func(files <-chan []string) {
+		go func(files <-chan Chunk) {
 			for {
 				select {
 				case chunk, ok := <-files:
@@ -15,13 +25,19 @@ func CreatePool(wg *sync.WaitGroup, poolSize int, files <-chan []string, callbac
 						return
 					}
 
-					res, err := callback(chunk)
+					res, err := scanFilesCallback(chunk)
 					logWork(res, err)
+
+					if err == nil {
+						for _, parsed := range parse(res, chunk) {
+							output <- parsed
+						}
+					}
 
 					wg.Done()
 				}
 			}
-		}(files)
+		}(chunks)
 	}
 }
 
@@ -29,6 +45,6 @@ func logWork(result []byte, err error) {
 	if err != nil {
 		log.Failure("", err.Error())
 	} else if len(result) != 0 {
-		log.Success("Success", string(result))
+		//log.Success("Success", string(result))
 	}
 }

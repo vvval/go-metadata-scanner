@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -12,7 +11,6 @@ import (
 	"github.com/vvval/go-metadata-scanner/metadata"
 	"github.com/vvval/go-metadata-scanner/scan"
 	"github.com/vvval/go-metadata-scanner/util"
-	syslog "log"
 	"sync"
 )
 
@@ -22,12 +20,13 @@ type Job struct {
 }
 
 var (
-	wg          sync.WaitGroup
-	jobs        chan *Job
-	files       []string
-	skipFileErr = errors.New("skipFileErr")
-	noFileErr   = errors.New("noFileErr")
-	writeInput  writeCommand.Input
+	wg           sync.WaitGroup
+	jobs         chan *Job
+	files        []string
+	appFilesData []scancmd.FileData
+	skipFileErr  = errors.New("skipFileErr")
+	noFileErr    = errors.New("noFileErr")
+	writeInput   writeCommand.Input
 )
 
 const handlers int = 20
@@ -51,70 +50,72 @@ for proper mapping CSV data into appropriate metadata fields`,
 	initPool(handlers, jobs)
 }
 
-func appendScanPool(wg *sync.WaitGroup, poolSize int, files <-chan []string, callback func(files []string) ([]byte, error), jsonResult *[]map[string]interface{}) {
-	for i := 0; i < poolSize; i++ {
-		go func(files <-chan []string) {
-			for {
-				select {
-				case chunk, ok := <-files:
-					if !ok {
-						return
-					}
-
-					//res, err := callback(chunk)
-
-					//if err == nil {
-					//	unmarshal := make([]map[string]interface{}, len(chunk))
-					//	if err = json.Unmarshal(res, &unmarshal); err == nil {
-					//		fmt.Printf("PING2 %+v\n", unmarshal)
-					//		for _, elem := range unmarshal {
-					//			*jsonResult = append(*jsonResult, elem)
-					//		}
-					//	} else {
-					//		fmt.Printf("PING2 %+v\n", err.Error())
-					//	}
-					//} else {
-					//
-					//	fmt.Printf("PING3 %+v\n", err.Error())
-					//}
-					if res, err := callback(chunk); err == nil {
-						unmarshal := make([]map[string]interface{}, len(chunk))
-						if err = json.Unmarshal(res, &unmarshal); err == nil {
-							for _, elem := range unmarshal {
-								*jsonResult = append(*jsonResult, elem)
-							}
-						}
-					}
-
-					wg.Done()
-				}
-			}
-		}(files)
-	}
-}
+//func appendScanPool(wg *sync.WaitGroup, poolSize int, files <-chan []string, callback func(files []string) ([]byte, error), jsonResult *[]metadata.Tags) {
+//	for i := 0; i < poolSize; i++ {
+//		go func(files <-chan []string) {
+//			for {
+//				select {
+//				case chunk, ok := <-files:
+//					if !ok {
+//						return
+//					}
+//
+//					//res, err := callback(chunk)
+//
+//					//if err == nil {
+//					//	unmarshal := make([]map[string]interface{}, len(chunk))
+//					//	if err = json.Unmarshal(res, &unmarshal); err == nil {
+//					//		fmt.Printf("PING2 %+v\n", unmarshal)
+//					//		for _, elem := range unmarshal {
+//					//			*jsonResult = append(*jsonResult, elem)
+//					//		}
+//					//	} else {
+//					//		fmt.Printf("PING2 %+v\n", err.Error())
+//					//	}
+//					//} else {
+//					//
+//					//	fmt.Printf("PING3 %+v\n", err.Error())
+//					//}
+//					if res, err := callback(chunk); err == nil {
+//						unmarshal := make([]metadata.Tags, len(chunk))
+//						if err = json.Unmarshal(res, &unmarshal); err == nil {
+//							for _, elem := range unmarshal {
+//								*jsonResult = append(*jsonResult, elem)
+//							}
+//						}
+//					}
+//
+//					wg.Done()
+//				}
+//			}
+//		}(files)
+//	}
+//}
 
 func writeHandler(cmd *cobra.Command, args []string) {
+	files = scan.MustDir(writeInput.Directory(), config.Get().Extensions())
 	if writeInput.Append() {
-		jsonResult := make([]map[string]interface{}, len(files))
-		scanFiles := make(chan []string)
+		scanFiles := make(chan scancmd.Chunk)
+		filesData := make(chan scancmd.FileData)
 		var scanWG sync.WaitGroup
-		appendScanPool(&scanWG, scancmd.PoolSize, scanFiles, exec, &jsonResult)
-		ReadJSON(writeInput.Directory(), config.Get().Extensions(), scancmd.PoolSize, &scanWG, scanFiles)
+		scancmd.CreatePool(&scanWG, scancmd.PoolSize, scanFiles, ScanFiles, filesData)
+		GetFiles(files, scancmd.PoolSize, &scanWG, scanFiles)
 
-		wg.Wait()
-		close(scanFiles)
+		go func() {
+			scanWG.Wait()
+			close(filesData)
+			close(scanFiles)
+		}()
 
-		fmt.Printf("Output size: %+v\n", jsonResult)
-		//read from file and append to job.payload
+		for file := range filesData {
+			appFilesData = append(appFilesData, file)
+			//fmt.Printf("Output size: %+v\n", file)
+		}
+		///wait here
 	}
 
-	file, err := util.OpenReadonlyFile(writeInput.Filename())
-	if err != nil {
-		syslog.Fatalln(err)
-	}
+	file := util.MustOpenReadonlyFile(writeInput.Filename())
 	defer file.Close()
-
-	files = scanDir(writeInput.Directory(), config.Get().Extensions())
 
 	writeCommand.ReadFile(file, writeInput.Separator(), func(filename string, payload metadata.Payload) {
 		wg.Add(1)
@@ -125,15 +126,6 @@ func writeHandler(cmd *cobra.Command, args []string) {
 	close(jobs)
 
 	log.Log("Writing", "done")
-}
-
-func scanDir(directory string, extensions []string) []string {
-	result, err := scan.Dir(directory, extensions)
-	if err != nil {
-		syslog.Fatalln(err)
-	}
-
-	return result
 }
 
 func initPool(poolSize int, jobs <-chan *Job) {

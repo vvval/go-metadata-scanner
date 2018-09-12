@@ -2,6 +2,7 @@ package scan
 
 import (
 	"github.com/vvval/go-metadata-scanner/util"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,7 +10,16 @@ import (
 
 var files = map[string]string{}
 
-func Dir(directory string, extensions []string) ([]string, error) {
+func MustDir(directory string, extensions []string) []string {
+	dirs, err := scanDir(directory, extensions)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return dirs
+}
+
+func scanDir(directory string, extensions []string) ([]string, error) {
 	err := filepath.Walk(directory, visit)
 	if err != nil {
 		return []string{}, err

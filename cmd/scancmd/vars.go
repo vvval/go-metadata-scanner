@@ -1,9 +1,19 @@
 package scancmd
 
+import "github.com/vvval/go-metadata-scanner/metadata"
+
+type FileData struct {
+	filename string
+	tags     metadata.Tags
+}
+
+type Chunk []string
+
 var (
-	Input    Flags
-	Files    chan []string
-	PoolSize = 10
+	Input     Flags
+	Chunks    chan Chunk
+	FilesData chan FileData
+	PoolSize  = 10
 )
 
 type Flags struct {

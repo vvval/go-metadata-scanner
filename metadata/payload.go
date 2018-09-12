@@ -6,13 +6,15 @@ import (
 
 const separator string = "<sep>"
 
+type Tags map[string]interface{}
+
 type Payload struct {
 	useSeparator bool
-	tags         map[string]interface{}
+	tags         Tags
 }
 
 func New() Payload {
-	return Payload{tags: map[string]interface{}{}}
+	return Payload{tags: Tags{}}
 }
 
 func Separator() string {
@@ -23,7 +25,7 @@ func (l *Payload) UseSeparator() bool {
 	return l.useSeparator
 }
 
-func (l *Payload) Tags() map[string]interface{} {
+func (l *Payload) Tags() Tags {
 	return l.tags
 }
 

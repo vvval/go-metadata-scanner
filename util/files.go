@@ -2,11 +2,17 @@ package util
 
 import (
 	"encoding/csv"
+	"log"
 	"os"
 )
 
-func OpenReadonlyFile(filename string) (*os.File, error) {
-	return os.OpenFile(filename, os.O_RDONLY, os.ModePerm)
+func MustOpenReadonlyFile(filename string) *os.File {
+	file, err := os.OpenFile(filename, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return file
 }
 
 func GetCSVReader(file *os.File, sep rune) *csv.Reader {
