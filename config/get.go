@@ -3,7 +3,7 @@ package config
 import (
 	"github.com/imdario/mergo"
 	"github.com/vvval/go-metadata-scanner/log"
-	"github.com/vvval/go-metadata-scanner/scan"
+	"github.com/vvval/go-metadata-scanner/util"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 )
@@ -24,7 +24,7 @@ func init() {
 }
 
 func load(defaultConfig config) config {
-	if scan.FileExists(configFilename) {
+	if util.FileExists(configFilename) {
 		fileConfig, err := loadFile()
 		if err == nil {
 			return mergeConfigs(fileConfig, defaultConfig)

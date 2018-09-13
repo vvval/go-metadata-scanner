@@ -2,6 +2,7 @@ package scancmd
 
 import (
 	"github.com/vvval/go-metadata-scanner/log"
+	"github.com/vvval/go-metadata-scanner/vars"
 	"sync"
 )
 
@@ -12,12 +13,12 @@ import (
 func CreatePool(
 	wg *sync.WaitGroup,
 	poolSize int,
-	chunks <-chan Chunk,
-	scanFilesCallback func(files Chunk) ([]byte, error),
-	output chan<- FileData,
+	chunks <-chan vars.Chunk,
+	scanFilesCallback func(files vars.Chunk) ([]byte, error),
+	output chan<- vars.File,
 ) {
 	for i := 0; i < poolSize; i++ {
-		go func(files <-chan Chunk) {
+		go func(files <-chan vars.Chunk) {
 			for {
 				select {
 				case chunk, ok := <-files:
@@ -26,9 +27,9 @@ func CreatePool(
 					}
 
 					res, err := scanFilesCallback(chunk)
-					logWork(res, err)
-
-					if err == nil {
+					if err != nil {
+						log.Failure("", err.Error())
+					} else {
 						for _, parsed := range parse(res, chunk) {
 							output <- parsed
 						}
@@ -38,13 +39,5 @@ func CreatePool(
 				}
 			}
 		}(chunks)
-	}
-}
-
-func logWork(result []byte, err error) {
-	if err != nil {
-		log.Failure("", err.Error())
-	} else if len(result) != 0 {
-		//log.Success("Success", string(result))
 	}
 }

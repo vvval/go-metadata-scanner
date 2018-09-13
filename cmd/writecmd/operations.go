@@ -1,12 +1,12 @@
-package writeCommand
+package writecmd
 
 import (
 	"fmt"
 	"github.com/vvval/go-metadata-scanner/config"
 	"github.com/vvval/go-metadata-scanner/dict"
 	"github.com/vvval/go-metadata-scanner/log"
-	"github.com/vvval/go-metadata-scanner/metadata"
 	"github.com/vvval/go-metadata-scanner/util"
+	"github.com/vvval/go-metadata-scanner/vars/metadata"
 	"io"
 	"os"
 )

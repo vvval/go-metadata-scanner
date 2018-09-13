@@ -1,7 +1,7 @@
 package log
 
 import (
-	"github.com/wolfy-j/goffli/utils"
+	"github.com/spiral/roadrunner/cmd/rr/utils"
 	"strings"
 )
 
@@ -14,11 +14,11 @@ func Debug(name string, args ...string) {
 		return
 	}
 
-	utils.Log(name, args...)
+	log(name, args...)
 }
 
 func Log(name string, args ...string) {
-	utils.Log(name, args...)
+	log(name, args...)
 }
 
 func Command(name string, args ...string) {
@@ -26,7 +26,7 @@ func Command(name string, args ...string) {
 		return
 	}
 
-	utils.Log(name, args...)
+	log(name, args...)
 }
 
 func Success(name string, args ...string) {
@@ -34,7 +34,7 @@ func Success(name string, args ...string) {
 		return
 	}
 
-	utils.Log(name, args...)
+	log(name, args...)
 }
 
 func Failure(name string, args ...string) {
@@ -43,6 +43,10 @@ func Failure(name string, args ...string) {
 	}
 
 	logError(name, args...)
+}
+
+func log(name string, args ...string) {
+	utils.Printf("<cyan+hb>►</reset> <yellow+hb>%s</reset> <green+hb>%s</reset>\n", name, strings.Join(args, " "))
 }
 
 func logError(name string, args ...string) {

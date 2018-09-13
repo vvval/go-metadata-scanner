@@ -11,7 +11,7 @@ var rootCmd = &cobra.Command{
 	Use:   "go-metadata-scanner",
 	Short: "Scanning and writing photo metadata",
 	Long: `Simple app with ability to scan images metadata into output file
-or read metadata from writeInput file and bulk update the photos`,
+or read metadata from input file and bulk update the photos`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

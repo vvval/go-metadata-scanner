@@ -22,3 +22,9 @@ func GetCSVReader(file *os.File, sep rune) *csv.Reader {
 
 	return reader
 }
+
+func FileExists(filename string) bool {
+	_, err := os.Stat(filename)
+
+	return err == nil
+}

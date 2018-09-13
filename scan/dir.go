@@ -1,7 +1,7 @@
 package scan
 
 import (
-	"github.com/vvval/go-metadata-scanner/util"
+	"github.com/vvval/go-metadata-scanner/vars"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,7 +10,7 @@ import (
 
 var files = map[string]string{}
 
-func MustDir(directory string, extensions []string) []string {
+func MustDir(directory string, extensions []string) vars.Chunk {
 	dirs, err := scanDir(directory, extensions)
 	if err != nil {
 		log.Fatalln(err)
@@ -19,13 +19,13 @@ func MustDir(directory string, extensions []string) []string {
 	return dirs
 }
 
-func scanDir(directory string, extensions []string) ([]string, error) {
+func scanDir(directory string, extensions []string) (vars.Chunk, error) {
 	err := filepath.Walk(directory, visit)
 	if err != nil {
 		return []string{}, err
 	}
 
-	var scanned []string
+	var scanned vars.Chunk
 	for file, extension := range files {
 		if extensionMatch(extension, extensions) {
 			scanned = append(scanned, file)
@@ -46,7 +46,7 @@ func visit(path string, f os.FileInfo, _ error) error {
 
 func extensionMatch(extension string, extensions []string) bool {
 	for _, ext := range extensions {
-		if util.Equals(extension, ext) {
+		if strings.EqualFold(extension, ext) {
 			return true
 		}
 	}

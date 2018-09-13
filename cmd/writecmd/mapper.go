@@ -1,9 +1,9 @@
-package writeCommand
+package writecmd
 
 import (
 	"github.com/vvval/go-metadata-scanner/dict"
-	"github.com/vvval/go-metadata-scanner/metadata"
 	"github.com/vvval/go-metadata-scanner/util"
+	"github.com/vvval/go-metadata-scanner/vars/metadata"
 	"strings"
 )
 
@@ -11,8 +11,8 @@ import (
 // and fill output array with line value for each tag aliases from TagMap.
 //
 // Example:
-// 		Input line is [1:"keywords values", 3:"some description"
-// 		Input columns are [1:keywords,2:title,3:description]
+// 		Flags line is [1:"keywords values", 3:"some description"
+// 		Flags columns are [1:keywords,2:title,3:description]
 // 		Output is [
 // 			"IPTC:keywords1":"keywords values",
 // 			"XMP:keywords2":"keywords values",
@@ -30,7 +30,6 @@ func mapPayload(columns map[int]dict.Tag, input []string) metadata.Payload {
 			continue
 		}
 
-		//todo replace with getLists and getBooleans
 		for _, tag := range t.Map() {
 			if d.IsBoolean(t.Key(), tag) {
 				payload.AddBool(tag, len(value) != 0)

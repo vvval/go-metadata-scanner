@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/vvval/go-metadata-scanner/cmd/scancmd"
-	"github.com/vvval/go-metadata-scanner/cmd/writeCommand"
+	"github.com/vvval/go-metadata-scanner/cmd/writecmd"
 	"github.com/vvval/go-metadata-scanner/config"
 	"github.com/vvval/go-metadata-scanner/log"
-	"github.com/vvval/go-metadata-scanner/metadata"
 	"github.com/vvval/go-metadata-scanner/scan"
 	"github.com/vvval/go-metadata-scanner/util"
+	"github.com/vvval/go-metadata-scanner/vars"
+	"github.com/vvval/go-metadata-scanner/vars/metadata"
 	"sync"
 )
 
@@ -23,20 +23,20 @@ var (
 	wg           sync.WaitGroup
 	jobs         chan *Job
 	files        []string
-	appFilesData []scancmd.FileData
+	appFilesData []vars.File
 	skipFileErr  = errors.New("skipFileErr")
 	noFileErr    = errors.New("noFileErr")
-	writeInput   writeCommand.Input
+	writeInput   writecmd.Flags
 )
 
-const handlers int = 20
+const poolSize int = 20
 
 func init() {
 	var cmd = &cobra.Command{
 		Use:   "write",
 		Short: "Read metadata from file and writer to images",
 		Long: `Read metadata from file and writer to images.
-Input file should be a CSV file with comma-separated fields (or pass custom separator via "s" flag).
+Flags file should be a CSV file with comma-separated fields (or pass custom separator via "s" flag).
 First column should be reserved for file names, its name is omitted.
 Other columns should be named as keywords in a dict.yaml maps section provided
 for proper mapping CSV data into appropriate metadata fields`,
@@ -44,80 +44,27 @@ for proper mapping CSV data into appropriate metadata fields`,
 	}
 
 	rootCmd.AddCommand(cmd)
-	writeCommand.FillInput(cmd, &writeInput)
-
-	jobs = make(chan *Job)
-	initPool(handlers, jobs)
+	writeInput.Fill(cmd)
 }
 
-//func appendScanPool(wg *sync.WaitGroup, poolSize int, files <-chan []string, callback func(files []string) ([]byte, error), jsonResult *[]metadata.Tags) {
-//	for i := 0; i < poolSize; i++ {
-//		go func(files <-chan []string) {
-//			for {
-//				select {
-//				case chunk, ok := <-files:
-//					if !ok {
-//						return
-//					}
-//
-//					//res, err := callback(chunk)
-//
-//					//if err == nil {
-//					//	unmarshal := make([]map[string]interface{}, len(chunk))
-//					//	if err = json.Unmarshal(res, &unmarshal); err == nil {
-//					//		fmt.Printf("PING2 %+v\n", unmarshal)
-//					//		for _, elem := range unmarshal {
-//					//			*jsonResult = append(*jsonResult, elem)
-//					//		}
-//					//	} else {
-//					//		fmt.Printf("PING2 %+v\n", err.Error())
-//					//	}
-//					//} else {
-//					//
-//					//	fmt.Printf("PING3 %+v\n", err.Error())
-//					//}
-//					if res, err := callback(chunk); err == nil {
-//						unmarshal := make([]metadata.Tags, len(chunk))
-//						if err = json.Unmarshal(res, &unmarshal); err == nil {
-//							for _, elem := range unmarshal {
-//								*jsonResult = append(*jsonResult, elem)
-//							}
-//						}
-//					}
-//
-//					wg.Done()
-//				}
-//			}
-//		}(files)
-//	}
-//}
-
 func writeHandler(cmd *cobra.Command, args []string) {
-	files = scan.MustDir(writeInput.Directory(), config.Get().Extensions())
 	if writeInput.Append() {
-		scanFiles := make(chan scancmd.Chunk)
-		filesData := make(chan scancmd.FileData)
-		var scanWG sync.WaitGroup
-		scancmd.CreatePool(&scanWG, scancmd.PoolSize, scanFiles, ScanFiles, filesData)
-		GetFiles(files, scancmd.PoolSize, &scanWG, scanFiles)
+		log.Log("Scan files for appending", "")
 
-		go func() {
-			scanWG.Wait()
-			close(filesData)
-			close(scanFiles)
-		}()
+		var files = scan.MustDir(writeInput.Directory(), config.Get().Extensions())
+		var poolSize, chunkSize = util.AdjustPoolSize(PoolSize, len(files), MinChunkSize)
+		appFilesData = writecmd.Scan(files.Split(chunkSize), poolSize)
 
-		for file := range filesData {
-			appFilesData = append(appFilesData, file)
-			//fmt.Printf("Output size: %+v\n", file)
-		}
-		///wait here
+		log.Success("Scanned", "\n")
 	}
+
+	jobs = make(chan *Job)
+	initPool(poolSize, jobs, poolWorker)
 
 	file := util.MustOpenReadonlyFile(writeInput.Filename())
 	defer file.Close()
 
-	writeCommand.ReadFile(file, writeInput.Separator(), func(filename string, payload metadata.Payload) {
+	writecmd.ReadFile(file, writeInput.Separator(), func(filename string, payload metadata.Payload) {
 		wg.Add(1)
 		jobs <- &Job{filename, payload}
 	})
@@ -125,10 +72,10 @@ func writeHandler(cmd *cobra.Command, args []string) {
 	wg.Wait()
 	close(jobs)
 
-	log.Log("Writing", "done")
+	log.Success("Writing", "done")
 }
 
-func initPool(poolSize int, jobs <-chan *Job) {
+func initPool(poolSize int, jobs <-chan *Job, poolWorkerFunc func(job *Job, append, originals bool) ([]byte, error)) {
 	// worker pool
 	for i := 0; i < poolSize; i++ {
 		go func(jobs <-chan *Job) {
@@ -139,7 +86,7 @@ func initPool(poolSize int, jobs <-chan *Job) {
 						return
 					}
 
-					res, err := work(job, writeInput)
+					res, err := poolWorkerFunc(job, writeInput.Append(), writeInput.Originals())
 					logWork(res, job.filename, err)
 
 					wg.Done()
@@ -149,8 +96,8 @@ func initPool(poolSize int, jobs <-chan *Job) {
 	}
 }
 
-func work(job *Job, input writeCommand.Input) (res []byte, err error) {
-	if input.Append() {
+func poolWorker(job *Job, append, originals bool) ([]byte, error) {
+	if append {
 		//read from file and append to job.payload
 	}
 
@@ -163,10 +110,10 @@ func work(job *Job, input writeCommand.Input) (res []byte, err error) {
 		return []byte{}, skipFileErr
 	}
 
-	result, err := writeCommand.WriteFile(
+	result, err := writecmd.WriteFile(
 		filename,
 		job.payload,
-		input.Originals(),
+		originals,
 	)
 
 	return result, err
