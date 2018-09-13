@@ -15,8 +15,7 @@ import (
 )
 
 var (
-	jobs       chan *writecmd.Job
-	files      vars.Chunk
+	fileNames  vars.Chunk
 	filesData  []vars.File
 	writeFlags writecmd.Flags
 )
@@ -40,19 +39,19 @@ for proper mapping CSV data into appropriate metadata fields`,
 }
 
 func writeHandler(cmd *cobra.Command, args []string) {
-	files = scan.MustDir(writeFlags.Directory(), config.Get().Extensions())
+	fileNames = scan.MustDir(writeFlags.Directory(), config.Get().Extensions())
 
 	if writeFlags.Append() {
-		log.Log("ScanFiles files for appending", "")
+		log.Log("ScanFiles fileNames for appending", "")
 
-		var poolSize, chunkSize = util.AdjustPoolSize(PoolSize, len(files), MinChunkSize)
-		filesData = operations.ScanFiles(files.Split(chunkSize), poolSize)
+		var poolSize, chunkSize = util.AdjustPoolSize(PoolSize, len(fileNames), MinChunkSize)
+		filesData = operations.ScanFiles(fileNames.Split(chunkSize), poolSize)
 
 		log.Success("Scanned", "\n")
 	}
 
 	var wg sync.WaitGroup
-	jobs = make(chan *writecmd.Job)
+	jobs := make(chan *writecmd.Job)
 	writecmd.CreatePool(&wg, poolSize, jobs, poolWorker, writeFlags.Append(), writeFlags.Originals())
 
 	file := util.MustOpenReadonlyFile(writeFlags.Filename())
@@ -70,7 +69,7 @@ func writeHandler(cmd *cobra.Command, args []string) {
 }
 
 func poolWorker(job *writecmd.Job, append, originals bool) ([]byte, error) {
-	filename, found := scan.Candidates(job.Filename(), files, config.Get().Extensions())
+	filename, found := scan.Candidates(job.Filename(), fileNames, config.Get().Extensions())
 	if !found {
 		return []byte{}, writecmd.NoFileErr
 	}
