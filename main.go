@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/vvval/go-metadata-scanner/cmd"
-	"github.com/vvval/go-metadata-scanner/log"
+	"github.com/vvval/go-metadata-scanner/util/log"
 	"github.com/wolfy-j/goffli/utils"
 )
 

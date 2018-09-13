@@ -1,12 +1,13 @@
 package scan
 
 import (
+	"github.com/vvval/go-metadata-scanner/vars"
 	"path/filepath"
 	"regexp"
 	"strings"
 )
 
-func Candidates(filename string, files []string, extensions []string) (string, bool) {
+func Candidates(filename string, files vars.Chunk, extensions []string) (string, bool) {
 	endings := extEndings(filename, extensions)
 	var candidates = make(map[string]bool)
 
@@ -15,7 +16,7 @@ func Candidates(filename string, files []string, extensions []string) (string, b
 	for _, file := range files {
 		for _, ending := range endings {
 			if strings.EqualFold(file, ending) {
-				return ending, true
+				return filepath.ToSlash(file), true
 			}
 
 			reg = regexp.MustCompile("^(([a-zA-Z]{1,}_)?0*)?" + regexp.QuoteMeta(filepath.Base(ending)) + "$")
@@ -31,7 +32,7 @@ func Candidates(filename string, files []string, extensions []string) (string, b
 	}
 
 	if len(values) == 1 {
-		return values[0], true
+		return filepath.ToSlash(values[0]), true
 	}
 
 	return "", false

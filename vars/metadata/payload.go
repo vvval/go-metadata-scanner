@@ -11,6 +11,7 @@ type Tags map[string]interface{}
 type Payload struct {
 	useSeparator bool
 	tags         Tags
+	lists        []string
 }
 
 func New() Payload {
@@ -21,35 +22,54 @@ func Separator() string {
 	return separator
 }
 
-func (l *Payload) UseSeparator() bool {
-	return l.useSeparator
+func (p *Payload) UseSeparator() bool {
+	return p.useSeparator
 }
 
-func (l *Payload) Tags() Tags {
-	return l.tags
+func (p *Payload) Tags() Tags {
+	return p.tags
 }
 
-func (l *Payload) AddBool(tag string, value bool) {
-	l.tags[tag] = value
+func (p *Payload) ListTags() []string {
+	return p.lists
 }
 
-func (l *Payload) AddList(tag string, value []string) {
-	var m = make(map[string]string)
+func (p *Payload) AddBool(tag string, value bool) {
+	p.tags[tag] = value
+}
+
+func (p *Payload) AddList(tag string, value []string) {
+	p.tags[tag] = strings.Join(unique(value), separator)
+	p.lists = unique(append(p.lists, tag))
+	p.useSeparator = true
+}
+
+func (p *Payload) UpdateList(tag string, value []string) {
+	keywords, ok := p.tags[tag].(string)
+	if !ok {
+		keywords = ""
+	}
+
+	values := strings.Split(keywords, separator)
+	values = append(values, value...)
+	p.tags[tag] = strings.Join(unique(values), separator)
+}
+
+func unique(value []string) []string {
+	var m = make(map[string]bool)
+	var out []string
 	for _, v := range value {
-		m[v] = v
+		if _, ok := m[v]; !ok && len(v) > 0 {
+			m[v] = true
+			out = append(out, v)
+		}
 	}
 
-	var arr []string
-	for v := range m {
-		arr = append(arr, v)
-	}
-
-	l.tags[tag] = strings.Join(arr, separator)
-	l.useSeparator = true
+	return out
 }
 
-func (l *Payload) AddTag(tag string, value string) {
-	l.tags[tag] = filter(value)
+func (p *Payload) AddTag(tag string, value string) {
+	p.tags[tag] = filter(value)
 }
 
 func filter(value interface{}) interface{} {

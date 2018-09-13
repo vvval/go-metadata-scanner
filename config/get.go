@@ -2,8 +2,8 @@ package config
 
 import (
 	"github.com/imdario/mergo"
-	"github.com/vvval/go-metadata-scanner/log"
 	"github.com/vvval/go-metadata-scanner/util"
+	"github.com/vvval/go-metadata-scanner/util/log"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 )

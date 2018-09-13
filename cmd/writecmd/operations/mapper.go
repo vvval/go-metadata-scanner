@@ -1,4 +1,4 @@
-package writecmd
+package operations
 
 import (
 	"github.com/vvval/go-metadata-scanner/dict"

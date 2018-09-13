@@ -1,4 +1,4 @@
-package writecmd
+package operations
 
 import (
 	"github.com/vvval/go-metadata-scanner/cmd/scancmd"
@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-func Scan(fileChunks []vars.Chunk, poolSize int) []vars.File {
+func ScanFiles(fileChunks []vars.Chunk, poolSize int) []vars.File {
 	var done = make(chan struct{})
 
 	var wg sync.WaitGroup

@@ -1,13 +1,13 @@
-package util
+package etool
 
 import (
 	"bytes"
 	"errors"
-	"github.com/vvval/go-metadata-scanner/log"
+	"github.com/vvval/go-metadata-scanner/util/log"
 	"os/exec"
 )
 
-func RunCommand(cmd string, args ...string) ([]byte, error) {
+func run(cmd string, args ...string) ([]byte, error) {
 	command := exec.Command(cmd, args...)
 
 	errBuffer := new(bytes.Buffer)

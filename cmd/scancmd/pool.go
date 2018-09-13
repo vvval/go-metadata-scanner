@@ -1,7 +1,7 @@
 package scancmd
 
 import (
-	"github.com/vvval/go-metadata-scanner/log"
+	"github.com/vvval/go-metadata-scanner/util/log"
 	"github.com/vvval/go-metadata-scanner/vars"
 	"sync"
 )
@@ -30,7 +30,7 @@ func CreatePool(
 					if err != nil {
 						log.Failure("", err.Error())
 					} else {
-						for _, parsed := range parse(res, chunk) {
+						for _, parsed := range parse(res) {
 							output <- parsed
 						}
 					}
