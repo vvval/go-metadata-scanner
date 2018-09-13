@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/vvval/go-metadata-scanner/cmd/scancmd"
 	"github.com/vvval/go-metadata-scanner/config"
@@ -57,5 +58,5 @@ func scanHandler(cmd *cobra.Command, args []string) {
 }
 
 func writeToFile(file vars.File) {
-	//fmt.Printf("+++FILE METADATA:%+v\n\n", file)
+	fmt.Printf("FILE %s\nMETADATA:%+v\n\n", file.Filename(), file.Tags())
 }

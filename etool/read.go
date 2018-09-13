@@ -17,5 +17,5 @@ func Read(names vars.Chunk) ([]byte, error) {
 
 	args = append(args, names...)
 
-	return run(config.Get().ToolPath(), names...)
+	return run(config.Get().ToolPath(), args...)
 }
