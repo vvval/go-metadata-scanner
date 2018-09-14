@@ -34,3 +34,12 @@ func FileExists(filename string) bool {
 func Extension(filename string) string {
 	return strings.Trim(filepath.Ext(filename), ".")
 }
+
+func Abs(path string) string {
+	abs, err := filepath.Abs(path)
+	if err == nil {
+		return abs
+	}
+
+	return path
+}

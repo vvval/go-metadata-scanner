@@ -24,10 +24,10 @@ func (f *File) Filename() string {
 func (f *File) RelPath(base string) string {
 	rel, err := filepath.Rel(base, f.filename)
 	if err != nil {
-		return f.filename
+		return filepath.ToSlash(f.filename)
 	}
 
-	return rel
+	return filepath.ToSlash(rel)
 }
 
 func (f *File) Tags() metadata.Tags {

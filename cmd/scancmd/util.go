@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/vvval/go-metadata-scanner/vars"
 	"github.com/vvval/go-metadata-scanner/vars/metadata"
-	"path/filepath"
 )
 
 const sourceFileField string = "SourceFile"
