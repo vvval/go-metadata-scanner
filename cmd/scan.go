@@ -48,7 +48,7 @@ func scanHandler(cmd *cobra.Command, args []string) {
 	var chunks = make(chan vars.Chunk)
 	var scannedFiles = make(chan vars.File)
 	var wg sync.WaitGroup
-	scancmd.CreatePool(&wg, poolSize, chunks, etool.Read, scannedFiles)
+	scancmd.CreatePool(&wg, poolSize, chunks, etool.Read, scannedFiles, config.Get().Fields())
 
 	for _, chunk := range files.Split(chunkSize) {
 		wg.Add(1)

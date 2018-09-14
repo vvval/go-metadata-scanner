@@ -3,7 +3,6 @@ package writecmd
 import (
 	"fmt"
 	"github.com/vvval/go-metadata-scanner/util/log"
-	"strings"
 	"sync"
 )
 
@@ -24,9 +23,10 @@ func CreatePool(
 						return
 					}
 
-					res, err := poolWorkerFunc(job, append, originals)
-					logWork(res, job.Filename(), err)
-
+					_, err := poolWorkerFunc(job, append, originals)
+					if err != nil {
+						logError(job.Filename(), err)
+					}
 					wg.Done()
 				}
 			}
@@ -34,14 +34,12 @@ func CreatePool(
 	}
 }
 
-func logWork(result []byte, filename string, err error) {
+func logError(filename string, err error) {
 	if err == SkipFileErr {
 		log.Debug("Skip", fmt.Sprintf("no payload found for `%s`", filename))
 	} else if err == NoFileErr {
 		log.Debug("Skip", fmt.Sprintf("no files candidate for `%s`", filename))
-	} else if err != nil {
+	} else {
 		log.Failure("Write error", err.Error())
-	} else if len(result) != 0 {
-		log.Log("Success", strings.Trim(string(result), " "))
 	}
 }

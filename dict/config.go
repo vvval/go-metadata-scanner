@@ -4,13 +4,13 @@ import (
 	"strings"
 )
 
-type config struct {
+type Config struct {
 	known    map[string][]string
 	booleans []string
 	lists    []string
 }
 
-func (conf config) Find(name string) (Tag, bool) {
+func (conf Config) Find(name string) (Tag, bool) {
 	if tag, found := inKnown(name); found {
 		return tag, found
 	}
@@ -58,11 +58,11 @@ func notFound(name string) (Tag, bool) {
 	return t, false
 }
 
-func (conf config) IsBoolean(key, tag string) bool {
+func (conf Config) IsBoolean(key, tag string) bool {
 	return oneOf(key, tag, conf.booleans)
 }
 
-func (conf config) IsList(key, tag string) bool {
+func (conf Config) IsList(key, tag string) bool {
 	return oneOf(key, tag, conf.lists)
 }
 

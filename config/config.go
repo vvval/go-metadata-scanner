@@ -1,19 +1,19 @@
 package config
 
-type config struct {
+type Config struct {
 	toolPath   string
 	extensions []string
 	fields     []string
 }
 
-func (c config) ToolPath() string {
+func (c Config) ToolPath() string {
 	return c.toolPath
 }
 
-func (c config) Extensions() []string {
+func (c Config) Extensions() []string {
 	return c.extensions
 }
 
-func (c config) Fields() []string {
+func (c Config) Fields() []string {
 	return c.fields
 }

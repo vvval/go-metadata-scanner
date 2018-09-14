@@ -1,6 +1,8 @@
 package operations
 
 import (
+	"github.com/vvval/go-metadata-scanner/configurator"
+	"github.com/vvval/go-metadata-scanner/configurator/config"
 	"github.com/vvval/go-metadata-scanner/dict"
 	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/vars/metadata"
@@ -21,7 +23,7 @@ import (
 // 		]
 func mapPayload(columns map[int]dict.Tag, input []string) metadata.Payload {
 	payload := metadata.New()
-	d := dict.Get()
+	d := dictionary()
 
 	for index, value := range input {
 		t, ok := columns[index]
@@ -49,7 +51,7 @@ func mapPayload(columns map[int]dict.Tag, input []string) metadata.Payload {
 // Map columns to a known tag map
 // Skip 1st column (dedicated to a file names) and empty columns
 func readColumns(columns []string) map[int]dict.Tag {
-	d := dict.Get()
+	d := dictionary()
 	output := map[int]dict.Tag{}
 	for i, column := range columns {
 		column = strings.Trim(column, " ")
@@ -68,4 +70,8 @@ func readColumns(columns []string) map[int]dict.Tag {
 	}
 
 	return output
+}
+
+func dictionary() config.Dict {
+	return configurator.Dict
 }

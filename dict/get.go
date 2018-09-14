@@ -10,17 +10,17 @@ import (
 
 const configFilename string = "./dict.yaml"
 
-var conf config
+var conf Config
 
-func Get() config {
+func Get() Config {
 	return conf
 }
 
 func init() {
-	conf = load(config{})
+	conf = load(Config{})
 }
 
-func load(defaultConfig config) config {
+func load(defaultConfig Config) Config {
 	if util.FileExists(configFilename) {
 		fileConfig, err := loadFile()
 		if err == nil {
@@ -34,10 +34,10 @@ func load(defaultConfig config) config {
 }
 
 // Read file into config
-func loadFile() (config, error) {
+func loadFile() (Config, error) {
 	data, err := ioutil.ReadFile(configFilename)
 	if err != nil {
-		return config{}, err
+		return Config{}, err
 	}
 
 	//empty struct to fill data into
@@ -48,15 +48,15 @@ func loadFile() (config, error) {
 	}{}
 	err = yaml.Unmarshal([]byte(data), &conf)
 	if err != nil {
-		return config{}, err
+		return Config{}, err
 	}
 
-	return config{conf.Known, conf.Booleans, conf.Lists}, nil
+	return Config{conf.Known, conf.Booleans, conf.Lists}, nil
 }
 
 // Merge default config and file config.
 // File config is primary
-func mergeConfigs(fileConfig, defaultConfig config) config {
+func mergeConfigs(fileConfig, defaultConfig Config) Config {
 	mergo.Merge(&fileConfig, defaultConfig)
 
 	return fileConfig

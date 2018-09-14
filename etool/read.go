@@ -8,10 +8,10 @@ import (
 
 var readFlags = []string{"-j", "-G", "-b"}
 
-func Read(names vars.Chunk) ([]byte, error) {
+func Read(names vars.Chunk, fields []string) ([]byte, error) {
 	var args = readFlags
 
-	for _, field := range config.Get().Fields() {
+	for _, field := range fields {
 		args = append(args, fmt.Sprintf("-%s:all", field))
 	}
 
