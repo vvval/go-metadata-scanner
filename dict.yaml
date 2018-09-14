@@ -41,5 +41,4 @@ booleans: ["XMP:Marked"]
 lists: ["creator","keywords","creatorTitle","personInImage","copyrightOwner",
         "IPTC:Contact",
         "IPTC:Writer-Editor",
-#        "captionWriter",
         "XMP:Contributor","XMP:TagsList","XMP:Publisher"]

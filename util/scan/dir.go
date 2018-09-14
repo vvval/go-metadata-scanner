@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/vars"
 	"log"
 	"os"
@@ -38,7 +39,7 @@ func scanDir(directory string, extensions []string) (vars.Chunk, error) {
 func visit(path string, f os.FileInfo, _ error) error {
 	if !f.IsDir() {
 		path = strings.ToLower(path)
-		files[path] = strings.Trim(filepath.Ext(path), ".")
+		files[path] = util.Extension(path)
 	}
 
 	return nil

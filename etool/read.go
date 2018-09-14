@@ -6,7 +6,7 @@ import (
 	"github.com/vvval/go-metadata-scanner/vars"
 )
 
-var readFlags = []string{"-j", "-G"}
+var readFlags = []string{"-j", "-G", "-b"}
 
 func Read(names vars.Chunk) ([]byte, error) {
 	var args = readFlags

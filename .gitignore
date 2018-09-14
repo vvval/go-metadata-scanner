@@ -13,3 +13,7 @@
 .idea/*
 *.txt
 *.csv
+*.png
+*.jpg
+*.jpeg
+*_original

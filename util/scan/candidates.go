@@ -10,8 +10,7 @@ import (
 func Candidates(filename string, files vars.Chunk, extensions []string) (string, bool) {
 	endings := extEndings(filename, extensions)
 	var candidates = make(map[string]bool)
-
-	reg := &regexp.Regexp{}
+	var reg = &regexp.Regexp{}
 
 	for _, file := range files {
 		for _, ending := range endings {

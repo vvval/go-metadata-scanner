@@ -4,6 +4,8 @@ import (
 	"encoding/csv"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 func MustOpenReadonlyFile(filename string) *os.File {
@@ -27,4 +29,8 @@ func FileExists(filename string) bool {
 	_, err := os.Stat(filename)
 
 	return err == nil
+}
+
+func Extension(filename string) string {
+	return strings.Trim(filepath.Ext(filename), ".")
 }

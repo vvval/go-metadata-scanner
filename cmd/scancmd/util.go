@@ -30,7 +30,7 @@ func parse(data []byte) []vars.File {
 
 func sourceFile(s interface{}) (string, bool) {
 	if filename, ok := s.(string); ok {
-		return filepath.ToSlash(filename), true
+		return filename, true
 	}
 
 	return "", false
