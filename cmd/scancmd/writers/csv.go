@@ -7,11 +7,11 @@ type CSVWriter struct {
 }
 
 // Headers to be like: Filename, XMP, IPTC, etc...
-func (w *CSVWriter) Write(files *[]vars.File) {
-
+func (w *CSVWriter) Write(files *[]vars.File) (n int, err error) {
+	return 0, nil
 }
 
-func NewCSVWriter(filename string, headers []string) *CSVWriter {
+func NewCSVWriter(filename string, headers []string) Writer {
 	//return &Writer{filename, headers}
 	return &CSVWriter{WriterProps{filename, headers}}
 }

@@ -10,9 +10,11 @@ import (
 	"github.com/vvval/go-metadata-scanner/etool"
 	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/util/log"
+	"github.com/vvval/go-metadata-scanner/util/rand"
 	"github.com/vvval/go-metadata-scanner/util/scan"
 	"github.com/vvval/go-metadata-scanner/vars"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -59,9 +61,10 @@ func scanHandler(cmd *cobra.Command, args []string) {
 		close(scannedFiles)
 	}()
 
-	file, err := os.Create(scanFlags.Filename())
+	outputFilename := randomizeOutputFilename(scanFlags.Filename())
+	file, err := os.Create(outputFilename)
 	if err != nil {
-		log.Failure("CSV write", fmt.Sprintf("failed writing into \"%s\" file", scanFlags.Filename()))
+		log.Failure("CSV write", fmt.Sprintf("failed writing into \"%s\" file", outputFilename))
 		os.Exit(1)
 	}
 
@@ -114,7 +117,7 @@ func scanHandler(cmd *cobra.Command, args []string) {
 	//	//writeToFile(file)
 	//}
 
-	log.Log("Scanned", fmt.Sprintf("Scan results are in the \"%s\" file", scanFlags.Filename()))
+	log.Log("Scanned", fmt.Sprintf("Scan results are in the \"%s\" file", outputFilename))
 }
 
 //func getWriter(f scancmd.Flags) *writers.CSVWriter {
@@ -135,6 +138,15 @@ func scanHandler(cmd *cobra.Command, args []string) {
 //
 //	fmt.Printf("filename %s\n format %s\nheaders %+s\n", scanFlags.Filename(), scanFlags.Format(), headers)
 //}
+
+func randomizeOutputFilename(path string) string {
+	ext := filepath.Ext(path)
+	dir := filepath.Dir(path)
+	base := filepath.Base(path)
+	hash := rand.Strings(10)
+
+	return filepath.Join(dir, base[0:len(base)-len(ext)]+"-"+hash+ext)
+}
 
 func packHeaders() []string {
 	headers := []string{"filename"}
