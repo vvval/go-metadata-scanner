@@ -34,7 +34,7 @@ func (f *File) Tags() metadata.Tags {
 	return f.tags
 }
 
-func (f *File) Pack(headers []string) map[string]string {
+func (f *File) PackStrings(headers []string) map[string]string {
 	output := make(map[string]string)
 
 	for header, value := range f.splitTagsToGroups(headers) {
@@ -45,6 +45,10 @@ func (f *File) Pack(headers []string) map[string]string {
 	}
 
 	return output
+}
+
+func (f *File) PackMap(headers []string) map[string]map[string]string {
+	return f.splitTagsToGroups(headers)
 }
 
 func (f *File) splitTagsToGroups(groups []string) map[string]map[string]string {

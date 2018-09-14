@@ -42,12 +42,12 @@ func writeHandler(cmd *cobra.Command, args []string) {
 	fileNames = scan.MustDir(writeFlags.Directory(), config.Get().Extensions())
 
 	if writeFlags.Append() {
-		log.Log("ScanFiles fileNames for appending", "")
+		log.Log("Scan files", "\"Append\" flag is enabled")
 
 		var poolSize, chunkSize = util.AdjustPoolSize(PoolSize, len(fileNames), MinChunkSize)
 		filesData = operations.ScanFiles(fileNames.Split(chunkSize), poolSize)
 
-		log.Success("Scanned", "\n")
+		log.Log("Scanned", "\n")
 	}
 
 	var wg sync.WaitGroup
@@ -65,7 +65,7 @@ func writeHandler(cmd *cobra.Command, args []string) {
 	wg.Wait()
 	close(jobs)
 
-	log.Success("Writing", "done")
+	log.Log("Writing", "done")
 }
 
 func poolWorker(job *writecmd.Job, append, originals bool) ([]byte, error) {

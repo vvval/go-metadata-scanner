@@ -28,7 +28,7 @@ func CreatePool(
 
 					res, err := scanFilesCallback(chunk)
 					if err != nil {
-						log.Failure("", err.Error())
+						log.Failure("Scan error", err.Error())
 					} else {
 						for _, parsed := range parse(res) {
 							output <- parsed

@@ -3,6 +3,7 @@ package writecmd
 import (
 	"fmt"
 	"github.com/vvval/go-metadata-scanner/util/log"
+	"strings"
 	"sync"
 )
 
@@ -39,8 +40,8 @@ func logWork(result []byte, filename string, err error) {
 	} else if err == NoFileErr {
 		log.Debug("Skip", fmt.Sprintf("no files candidate for `%s`", filename))
 	} else if err != nil {
-		log.Failure("", err.Error())
+		log.Failure("Write error", err.Error())
 	} else if len(result) != 0 {
-		log.Success("Success", string(result))
+		log.Log("Success", strings.Trim(string(result), " "))
 	}
 }

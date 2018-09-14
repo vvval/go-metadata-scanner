@@ -6,7 +6,16 @@ import (
 )
 
 var Visibility struct {
-	Command, Success, Failure, Debug bool
+	Command, Log, Failure, Debug bool
+}
+
+var format struct {
+	log, err string
+}
+
+func init() {
+	format.log = "<cyan+hb>►</reset> <yellow+hb>%s</reset> <green+hb>%s</reset>\n"
+	format.err = "<red+hb>%s: %s</reset>\n"
 }
 
 func Debug(name string, args ...string) {
@@ -18,19 +27,15 @@ func Debug(name string, args ...string) {
 }
 
 func Log(name string, args ...string) {
-	log(name, args...)
-}
-
-func Command(name string, args ...string) {
-	if !Visibility.Command {
+	if !Visibility.Log {
 		return
 	}
 
 	log(name, args...)
 }
 
-func Success(name string, args ...string) {
-	if !Visibility.Success {
+func Command(name string, args ...string) {
+	if !Visibility.Command {
 		return
 	}
 
@@ -46,13 +51,9 @@ func Failure(name string, args ...string) {
 }
 
 func log(name string, args ...string) {
-	utils.Printf("<cyan+hb>►</reset> <yellow+hb>%s</reset> <green+hb>%s</reset>\n", name, strings.Join(args, " "))
+	utils.Printf(format.log, name, strings.Join(args, " "))
 }
 
 func logError(name string, args ...string) {
-	if len(name) == 0 {
-		utils.Printf("<red+hb>%s</reset>\n", strings.Join(args, " "))
-	} else {
-		utils.Printf("<red+hb>%s: %s</reset>\n", name, strings.Join(args, " "))
-	}
+	utils.Printf(format.err, name, strings.Join(args, " "))
 }

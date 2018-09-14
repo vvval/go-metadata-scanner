@@ -2,16 +2,16 @@ package cmd
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/vvval/go-metadata-scanner/cmd/scancmd"
 	"github.com/vvval/go-metadata-scanner/config"
 	"github.com/vvval/go-metadata-scanner/etool"
 	"github.com/vvval/go-metadata-scanner/util"
-	log2 "github.com/vvval/go-metadata-scanner/util/log"
+	"github.com/vvval/go-metadata-scanner/util/log"
 	"github.com/vvval/go-metadata-scanner/util/scan"
 	"github.com/vvval/go-metadata-scanner/vars"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -38,7 +38,7 @@ By default output file is a "csv" file.`,
 }
 
 func scanHandler(cmd *cobra.Command, args []string) {
-	log2.Log("Scanning", util.Abs(scanFlags.Directory()))
+	log.Log("Scanning", util.Abs(scanFlags.Directory()))
 
 	var files = scan.MustDir(scanFlags.Directory(), config.Get().Extensions())
 	poolSize, chunkSize := util.AdjustPoolSize(PoolSize, len(files), MinChunkSize)
@@ -61,42 +61,60 @@ func scanHandler(cmd *cobra.Command, args []string) {
 
 	file, err := os.Create(scanFlags.Filename())
 	if err != nil {
-		log.Fatalln(err)
+		log.Failure("CSV write", fmt.Sprintf("failed writing into \"%s\" file", scanFlags.Filename()))
+		os.Exit(1)
 	}
 
 	defer file.Close()
 
 	headers := packHeaders()
-	w := csv.NewWriter(file)
-	w.Write(headers)
-	defer w.Flush()
+	if scanFlags.Format() == "csv" {
+		csvw := csv.NewWriter(file)
+		csvw.Write(headers)
+		defer csvw.Flush()
 
-	for file := range scannedFiles {
-		record := []string{file.RelPath(scanFlags.Directory())}
-		for group, data := range file.Pack(headers) {
-			for i := 1; i < len(headers); i++ {
-				header := headers[i]
-				if strings.EqualFold(header, group) {
-					record = append(record, data)
+		for scannedFile := range scannedFiles {
+			record := []string{scannedFile.RelPath(scanFlags.Directory())}
+			for group, data := range scannedFile.PackStrings(headers) {
+				for i := 1; i < len(headers); i++ {
+					header := headers[i]
+					if strings.EqualFold(header, group) {
+						record = append(record, data)
+					}
 				}
 			}
-		}
 
-		err := w.Write(record)
-		if err != nil {
-			log.Fatalln(err)
+			err := csvw.Write(record)
+			if err != nil {
+				log.Failure("CSV write", fmt.Sprintf("failed writing data for \"%s\" file", scannedFile.RelPath(scanFlags.Directory())))
+			}
+		}
+	}
+
+	if scanFlags.Format() == "json" {
+		o := map[string]map[string]interface{}{}
+		for scannedFile := range scannedFiles {
+			record := map[string]interface{}{}
+			for k, v := range scannedFile.PackMap(headers) {
+				record[k] = v
+			}
+			o[scannedFile.Filename()] = record
+		}
+		m, err := json.Marshal(o)
+		if err == nil {
+			file.Write(m)
 		}
 	}
 
 	//for file := range scannedFiles {
-	//	for k, v := range file.Pack(config.Get().Fields()) {
+	//	for k, v := range file.PackStrings(config.Get().Fields()) {
 	//		fmt.Printf("group: %v\n", k)
 	//		fmt.Printf("%s\n\n", v)
 	//	}
 	//	//writeToFile(file)
 	//}
 
-	log2.Success("Scanned", fmt.Sprintf("Scan results are in the \"%s\" file", scanFlags.Filename()))
+	log.Log("Scanned", fmt.Sprintf("Scan results are in the \"%s\" file", scanFlags.Filename()))
 }
 
 //func getWriter(f scancmd.Flags) *writers.CSVWriter {

@@ -55,5 +55,5 @@ func logColumns(columns map[int]dict.Tag) {
 		cols = append(cols, col.Key())
 	}
 
-	log.Log("Columns are:", cols...)
+	log.Log("Parsed columns are:", cols...)
 }

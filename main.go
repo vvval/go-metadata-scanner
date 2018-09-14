@@ -10,7 +10,7 @@ func main() {
 	utils.Verbose = true
 
 	log.Visibility.Command = true
-	log.Visibility.Success = true
+	log.Visibility.Log = true
 	log.Visibility.Failure = true
 	log.Visibility.Debug = true
 
