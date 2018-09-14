@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/vvval/go-metadata-scanner/configuration/vars"
-	"github.com/vvval/go-metadata-scanner/dict"
+	vars2 "github.com/vvval/go-metadata-scanner/vars"
 	"gopkg.in/yaml.v2"
 	"strings"
 )
@@ -44,7 +44,7 @@ func (c Dict) Filename() string {
 	return "./dict.yaml"
 }
 
-func (c Dict) Find(name string) (dict.Tag, bool) {
+func (c Dict) Find(name string) (vars2.Tag, bool) {
 	if tag, found := known(name, c.known); found {
 		return tag, found
 	}
@@ -72,7 +72,7 @@ func (c Dict) IsList(key, tag string) bool {
 	return oneOf(key, tag, c.lists)
 }
 
-func known(name string, lists map[string][]string) (dict.Tag, bool) {
+func known(name string, lists map[string][]string) (vars2.Tag, bool) {
 	for key, list := range lists {
 		if strings.EqualFold(key, name) {
 			return found(key, name, list)
@@ -88,12 +88,12 @@ func known(name string, lists map[string][]string) (dict.Tag, bool) {
 	return notFound(name)
 }
 
-func found(key, name string, list []string) (dict.Tag, bool) {
-	return dict.NewFoundTag(key, name, list), true
+func found(key, name string, list []string) (vars2.Tag, bool) {
+	return vars2.NewFoundTag(key, name, list), true
 }
 
-func notFound(name string) (dict.Tag, bool) {
-	return dict.NewNotFoundTag(name), false
+func notFound(name string) (vars2.Tag, bool) {
+	return vars2.NewNotFoundTag(name), false
 }
 
 func oneOf(key, tag string, set []string) bool {

@@ -3,8 +3,8 @@ package operations
 import (
 	"github.com/vvval/go-metadata-scanner/configuration"
 	"github.com/vvval/go-metadata-scanner/configuration/config"
-	"github.com/vvval/go-metadata-scanner/dict"
 	"github.com/vvval/go-metadata-scanner/util"
+	"github.com/vvval/go-metadata-scanner/vars"
 	"github.com/vvval/go-metadata-scanner/vars/metadata"
 	"strings"
 )
@@ -21,7 +21,7 @@ import (
 // 			"IPTC:description1":"some description",
 // 			"XMP:description2":"some description"
 // 		]
-func mapPayload(columns map[int]dict.Tag, input []string) metadata.Payload {
+func mapPayload(columns map[int]vars.Tag, input []string) metadata.Payload {
 	payload := metadata.New()
 	d := dictionary()
 
@@ -50,9 +50,9 @@ func mapPayload(columns map[int]dict.Tag, input []string) metadata.Payload {
 
 // Map columns to a known tag map
 // Skip 1st column (dedicated to a file names) and empty columns
-func readColumns(columns []string) map[int]dict.Tag {
+func readColumns(columns []string) map[int]vars.Tag {
 	d := dictionary()
-	output := map[int]dict.Tag{}
+	output := map[int]vars.Tag{}
 	for i, column := range columns {
 		column = strings.Trim(column, " ")
 		if i == 0 || len(column) == 0 {

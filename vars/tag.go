@@ -1,4 +1,4 @@
-package dict
+package vars
 
 type Tag struct {
 	key, original string
