@@ -2,7 +2,7 @@ package etool
 
 import (
 	"fmt"
-	"github.com/vvval/go-metadata-scanner/config"
+	"github.com/vvval/go-metadata-scanner/configuration"
 	"github.com/vvval/go-metadata-scanner/vars"
 )
 
@@ -17,5 +17,5 @@ func Read(names vars.Chunk, fields []string) ([]byte, error) {
 
 	args = append(args, names...)
 
-	return run(config.Get().ToolPath(), args...)
+	return run(configuration.App.ToolPath(), args...)
 }

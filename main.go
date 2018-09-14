@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/vvval/go-metadata-scanner/cmd"
-	"github.com/vvval/go-metadata-scanner/configurator"
+	"github.com/vvval/go-metadata-scanner/configuration"
 	"github.com/vvval/go-metadata-scanner/util/log"
 	"github.com/wolfy-j/goffli/utils"
 )
@@ -14,9 +14,11 @@ func init() {
 	log.Visibility.Failure = true
 	log.Visibility.Debug = true
 
-	configurator.LoadDict()
+	configuration.LoadAll()
 }
 
 func main() {
 	cmd.Execute()
+
+	//fmt.Printf("old %+v\nnew %+v\n\n\n", config.Get(), configurator.App)
 }

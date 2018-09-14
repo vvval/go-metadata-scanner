@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/vvval/go-metadata-scanner/cmd/scancmd"
-	"github.com/vvval/go-metadata-scanner/config"
+	"github.com/vvval/go-metadata-scanner/configuration"
 	"github.com/vvval/go-metadata-scanner/etool"
 	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/util/log"
@@ -42,13 +42,13 @@ By default output file is a "csv" file.`,
 func scanHandler(cmd *cobra.Command, args []string) {
 	log.Log("Scanning", util.Abs(scanFlags.Directory()))
 
-	var files = scan.MustDir(scanFlags.Directory(), config.Get().Extensions())
+	var files = scan.MustDir(scanFlags.Directory(), configuration.App.Extensions())
 	poolSize, chunkSize := util.AdjustPoolSize(PoolSize, len(files), MinChunkSize)
 
 	var chunks = make(chan vars.Chunk)
 	var scannedFiles = make(chan vars.File)
 	var wg sync.WaitGroup
-	scancmd.CreatePool(&wg, poolSize, chunks, etool.Read, scannedFiles, config.Get().Fields())
+	scancmd.CreatePool(&wg, poolSize, chunks, etool.Read, scannedFiles, configuration.App.Fields())
 
 	for _, chunk := range files.Split(chunkSize) {
 		wg.Add(1)
@@ -151,7 +151,7 @@ func randomizeOutputFilename(path string) string {
 func packHeaders() []string {
 	headers := []string{"filename"}
 
-	for _, field := range config.Get().Fields() {
+	for _, field := range configuration.App.Fields() {
 		headers = append(headers, field)
 	}
 

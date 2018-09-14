@@ -1,8 +1,8 @@
 package operations
 
 import (
-	"github.com/vvval/go-metadata-scanner/configurator"
-	"github.com/vvval/go-metadata-scanner/configurator/config"
+	"github.com/vvval/go-metadata-scanner/configuration"
+	"github.com/vvval/go-metadata-scanner/configuration/config"
 	"github.com/vvval/go-metadata-scanner/dict"
 	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/vars/metadata"
@@ -73,5 +73,5 @@ func readColumns(columns []string) map[int]dict.Tag {
 }
 
 func dictionary() config.Dict {
-	return configurator.Dict
+	return configuration.Dict
 }

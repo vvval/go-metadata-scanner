@@ -1,19 +1,11 @@
 package config
 
 import (
-	"github.com/vvval/go-metadata-scanner/configurator/vars"
+	"github.com/vvval/go-metadata-scanner/configuration/vars"
 	"github.com/vvval/go-metadata-scanner/dict"
 	"gopkg.in/yaml.v2"
 	"strings"
 )
-
-const configFilename string = "dict.yaml"
-
-type Dict struct {
-	known    map[string][]string
-	booleans []string
-	lists    []string
-}
 
 type DictSchema struct {
 	Known    map[string][]string `yaml:"known"`
@@ -21,11 +13,7 @@ type DictSchema struct {
 	Lists    []string            `yaml:"lists"`
 }
 
-func (conf Dict) Filename() string {
-	return configFilename
-}
-
-func (conf Dict) Schema() vars.Schema {
+func (c Dict) Schema() vars.Schema {
 	return DictSchema{}
 }
 
@@ -42,18 +30,32 @@ func (s DictSchema) Parse(data []byte) (vars.Config, error) {
 	}, nil
 }
 
-func (conf Dict) Find(name string) (dict.Tag, bool) {
-	if tag, found := known(name, conf.known); found {
+type Dict struct {
+	known    map[string][]string
+	booleans []string
+	lists    []string
+}
+
+func (c Dict) MergeDefaults() vars.Config {
+	return c
+}
+
+func (c Dict) Filename() string {
+	return "./dict.yaml"
+}
+
+func (c Dict) Find(name string) (dict.Tag, bool) {
+	if tag, found := known(name, c.known); found {
 		return tag, found
 	}
 
-	for _, b := range conf.booleans {
+	for _, b := range c.booleans {
 		if strings.EqualFold(b, name) {
 			return found("", name, []string{name})
 		}
 	}
 
-	for _, l := range conf.lists {
+	for _, l := range c.lists {
 		if strings.EqualFold(l, name) {
 			return found("", name, []string{name})
 		}
@@ -62,12 +64,12 @@ func (conf Dict) Find(name string) (dict.Tag, bool) {
 	return notFound(name)
 }
 
-func (conf Dict) IsBoolean(key, tag string) bool {
-	return oneOf(key, tag, conf.booleans)
+func (c Dict) IsBoolean(key, tag string) bool {
+	return oneOf(key, tag, c.booleans)
 }
 
-func (conf Dict) IsList(key, tag string) bool {
-	return oneOf(key, tag, conf.lists)
+func (c Dict) IsList(key, tag string) bool {
+	return oneOf(key, tag, c.lists)
 }
 
 func known(name string, lists map[string][]string) (dict.Tag, bool) {
