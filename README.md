@@ -13,7 +13,7 @@ Supported formats are `csv`, `json` and special `mscsv` format
 go run main.go write -f folder/with/image/caption/file.csv
 ```
 
-####Files match
+#### Files match
 Files are searched using soft comparison of given filename in the caption file as endings for real files, 
 prefix can be any letter, then `_` char and `0` digits.
 Also program tries to match the extension. Examples:
@@ -22,7 +22,7 @@ Also program tries to match the extension. Examples:
  * `2` will be searched as `2.png` and `2.jpg`.
  * Even if you specify `3.jpg` and have image named `3.jpg.png`, we will find it. 
 
-####Files destination
+#### Files destination
 Images should be placed relative the caption file (as the filename).
 
 For example, if filename is:
