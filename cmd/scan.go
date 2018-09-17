@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"encoding/csv"
-	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/vvval/go-metadata-scanner/cmd/scancmd"
+	"github.com/vvval/go-metadata-scanner/cmd/scancmd/writers"
 	"github.com/vvval/go-metadata-scanner/config"
 	"github.com/vvval/go-metadata-scanner/etool"
 	"github.com/vvval/go-metadata-scanner/util"
@@ -15,7 +14,6 @@ import (
 	"github.com/vvval/go-metadata-scanner/vars"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 )
 
@@ -62,82 +60,27 @@ func scanHandler(cmd *cobra.Command, args []string) {
 	}()
 
 	outputFilename := randomizeOutputFilename(scanFlags.Filename())
-	file, err := os.Create(outputFilename)
+
+	headers := packHeaders()
+	wr, err := writers.Get(scanFlags.Format())
 	if err != nil {
-		log.Failure("CSV write", fmt.Sprintf("failed writing into \"%s\" file", outputFilename))
+		log.Failure("Output writer", err.Error())
 		os.Exit(1)
 	}
 
-	defer file.Close()
+	wr.Open(outputFilename, headers)
+	defer wr.Close()
 
-	headers := packHeaders()
-	if scanFlags.Format() == "csv" {
-		csvw := csv.NewWriter(file)
-		csvw.Write(headers)
-		defer csvw.Flush()
-
-		for scannedFile := range scannedFiles {
-			record := []string{scannedFile.RelPath(scanFlags.Directory())}
-			for group, data := range scannedFile.PackStrings(headers) {
-				for i := 1; i < len(headers); i++ {
-					header := headers[i]
-					if strings.EqualFold(header, group) {
-						record = append(record, data)
-					}
-				}
-			}
-
-			err := csvw.Write(record)
-			if err != nil {
-				log.Failure("CSV write", fmt.Sprintf("failed writing data for \"%s\" file", scannedFile.RelPath(scanFlags.Directory())))
-			}
+	for file := range scannedFiles {
+		file.WithRelPath(scanFlags.Directory())
+		err := wr.Write(&file)
+		if err != nil {
+			log.Failure("CSV write", fmt.Sprintf("failed writing data for \"%s\" file", file.RelPath()))
 		}
 	}
-
-	if scanFlags.Format() == "json" {
-		o := map[string]map[string]interface{}{}
-		for scannedFile := range scannedFiles {
-			record := map[string]interface{}{}
-			for k, v := range scannedFile.PackMap(headers) {
-				record[k] = v
-			}
-			o[scannedFile.Filename()] = record
-		}
-		m, err := json.Marshal(o)
-		if err == nil {
-			file.Write(m)
-		}
-	}
-
-	//for file := range scannedFiles {
-	//	for k, v := range file.PackStrings(config.Get().Fields()) {
-	//		fmt.Printf("group: %v\n", k)
-	//		fmt.Printf("%s\n\n", v)
-	//	}
-	//	//writeToFile(file)
-	//}
 
 	log.Log("Scanned", fmt.Sprintf("Scan results are in the \"%s\" file", outputFilename))
 }
-
-//func getWriter(f scancmd.Flags) *writers.CSVWriter {
-//	headers := []string{"filename"}
-//	for _, field := range config.Get().Fields() {
-//		headers = append(headers, field)
-//	}
-//
-//	return writers.NewCSVWriter(scanFlags.Filename(), headers)
-//}
-
-//func writeToFile(file vars.File) {
-//	headers := []string{scanFlags.Filename()}
-//
-//	for _, field := range config.Get().Fields() {
-//		headers = append(headers, field)
-//	}
-//
-//	fmt.Printf("filename %s\n format %s\nheaders %+s\n", scanFlags.Filename(), scanFlags.Format(), headers)
-//}
 
 func randomizeOutputFilename(path string) string {
 	ext := filepath.Ext(path)
