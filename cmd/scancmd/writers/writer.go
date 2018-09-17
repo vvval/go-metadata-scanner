@@ -17,6 +17,13 @@ type BaseWriter struct {
 	headers  []string
 }
 
+func NewWriter(filename string, headers []string) BaseWriter {
+	return BaseWriter{
+		filename: filename,
+		headers:  headers,
+	}
+}
+
 func openFile(filename string) (*os.File, error) {
 	file, err := os.Create(filename)
 	if err != nil {
@@ -26,15 +33,8 @@ func openFile(filename string) (*os.File, error) {
 	return file, nil
 }
 
-func (w *BaseWriter) closeFile() {
-	if w.file != nil {
-		w.file.Close()
-	}
-}
-
-func NewWriter(filename string, headers []string) BaseWriter {
-	return BaseWriter{
-		filename: filename,
-		headers:  headers,
+func closeFile(file *os.File) {
+	if file != nil {
+		file.Close()
 	}
 }

@@ -42,7 +42,7 @@ func (w *JSONWriter) Close() error {
 	}
 
 	w.file.Write(packed)
-	w.closeFile()
+	closeFile(w.file)
 
 	return nil
 }

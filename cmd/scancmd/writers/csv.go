@@ -46,7 +46,7 @@ func (w *CSVWriter) Close() error {
 		w.csv.Flush()
 	}
 
-	w.closeFile()
+	closeFile(w.file)
 
 	return nil
 }
