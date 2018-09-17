@@ -7,6 +7,9 @@ func Get(ext string) (Writer, error) {
 	case "csv":
 		return &CSVWriter{}, nil
 
+	case "mscsv":
+		return &MSCSVWriter{}, nil
+
 	case "json":
 		return &JSONWriter{}, nil
 	}

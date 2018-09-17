@@ -17,6 +17,7 @@ func init() {
 
 	config.Dict = configuration.Load(config.Dict, "./dict.yaml").(config.DictConfig)
 	config.App = configuration.Load(config.App, "./app.yaml").(config.AppConfig)
+	config.MSCSV = configuration.Load(config.MSCSV, "./mscsv.yaml").(config.MSCSVConfig)
 }
 
 func main() {

@@ -68,7 +68,11 @@ func scanHandler(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	wr.Open(outputFilename, headers)
+	err = wr.Open(outputFilename, headers)
+	if err != nil {
+		log.Failure("Output writer", err.Error())
+		os.Exit(1)
+	}
 	defer wr.Close()
 
 	for file := range scannedFiles {

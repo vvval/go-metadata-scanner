@@ -2,7 +2,6 @@ package scancmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/vvval/go-metadata-scanner/util"
 	"path/filepath"
 	"strings"
 )
@@ -20,27 +19,25 @@ func (f Flags) Directory() string {
 }
 
 func (f Flags) Filename() string {
-	filename := f.filename[0:len(f.filename)-len(f.ext())] + "." + f.Format()
-
-	return filepath.Join(f.Directory(), filename)
+	return filepath.Join(f.Directory(), f.filename+"."+f.ext())
 }
 
 func (f Flags) Format() string {
-	ext := strings.ToLower(util.Extension(f.filename))
-	if len(ext) == 0 {
-		ext = defaultFormat
-	}
-
-	return ext
+	return f.format
 }
 
 func (f Flags) ext() string {
-	return filepath.Ext(f.filename)
+	if len(f.format) == 0 || strings.EqualFold(f.format, "mscsv") {
+		return defaultFormat
+	}
+
+	return f.format
 }
 
 func (f *Flags) Fill(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&f.directory, "directory", "d", "", "Directory with files to be scanned")
 	cmd.MarkFlagRequired("directory")
-	cmd.Flags().StringVarP(&f.filename, "filename", "f", "", "Output file (with extension)")
-	cmd.MarkFlagRequired("filename")
+	cmd.Flags().StringVarP(&f.filename, "output", "o", "", "Output file (without extension)")
+	cmd.MarkFlagRequired("output")
+	cmd.Flags().StringVarP(&f.format, "format", "f", "csv", "Output file format")
 }

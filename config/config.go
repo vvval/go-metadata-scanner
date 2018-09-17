@@ -1,6 +1,7 @@
 package config
 
 var (
-	Dict DictConfig
-	App  = AppConfig{toolPath: "exiftool"}
+	Dict  DictConfig
+	MSCSV MSCSVConfig
+	App   = AppConfig{toolPath: "exiftool"}
 )
