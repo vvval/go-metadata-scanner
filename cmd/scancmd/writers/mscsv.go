@@ -2,18 +2,17 @@ package writers
 
 import (
 	"encoding/csv"
-	"encoding/json"
 	"github.com/vvval/go-metadata-scanner/vars"
 	"strings"
 )
 
-type CSVWriter struct {
+type MSCSVWriter struct {
 	BaseWriter
 	csv *csv.Writer
 }
 
 // Headers to be like: Filename, XMP, IPTC, etc...
-func (w *CSVWriter) Write(file *vars.File) error {
+func (w *MSCSVWriter) Write(file *vars.File) error {
 	record := []string{file.RelPath()}
 	for group, data := range packStrings(file, w.headers) {
 		for i := 1; i < len(w.headers); i++ {
@@ -27,7 +26,7 @@ func (w *CSVWriter) Write(file *vars.File) error {
 	return w.csv.Write(record)
 }
 
-func (w *CSVWriter) Open(filename string, headers []string) error {
+func (w *MSCSVWriter) Open(filename string, headers []string) error {
 	w.BaseWriter = NewWriter(filename, headers)
 
 	file, err := openFile(w.filename)
@@ -42,7 +41,7 @@ func (w *CSVWriter) Open(filename string, headers []string) error {
 	return nil
 }
 
-func (w *CSVWriter) Close() error {
+func (w *MSCSVWriter) Close() error {
 	if w.csv != nil {
 		w.csv.Flush()
 	}
@@ -50,17 +49,4 @@ func (w *CSVWriter) Close() error {
 	closeFile(w.file)
 
 	return nil
-}
-
-func packStrings(file *vars.File, headers []string) map[string]string {
-	output := make(map[string]string)
-
-	for header, value := range tagsByGroups(file, headers) {
-		packed, err := json.Marshal(value)
-		if err == nil {
-			output[header] = string(packed)
-		}
-	}
-
-	return output
 }

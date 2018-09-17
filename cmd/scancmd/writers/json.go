@@ -13,7 +13,7 @@ type JSONWriter struct {
 // Headers to be like: Filename, XMP, IPTC, etc...
 func (w *JSONWriter) Write(file *vars.File) error {
 	record := map[string]interface{}{}
-	for k, v := range file.PackMap(w.headers) {
+	for k, v := range tagsByGroups(file, w.headers) {
 		record[k] = v
 	}
 	w.buf[file.RelPath()] = record
