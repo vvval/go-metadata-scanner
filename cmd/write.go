@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vvval/go-metadata-scanner/cmd/writecmd"
 	"github.com/vvval/go-metadata-scanner/cmd/writecmd/operations"
-	"github.com/vvval/go-metadata-scanner/configuration"
+	"github.com/vvval/go-metadata-scanner/config"
 	"github.com/vvval/go-metadata-scanner/etool"
 	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/util/log"
@@ -39,7 +39,7 @@ for proper mapping CSV data into appropriate metadata fields`,
 }
 
 func writeHandler(cmd *cobra.Command, args []string) {
-	fileNames = scan.MustDir(writeFlags.Directory(), configuration.App.Extensions())
+	fileNames = scan.MustDir(writeFlags.Directory(), config.App.Extensions())
 
 	if writeFlags.Append() {
 		log.Log("Scan files", "\"Append\" flag is enabled")
@@ -69,7 +69,7 @@ func writeHandler(cmd *cobra.Command, args []string) {
 }
 
 func poolWorker(job *writecmd.Job, append, originals bool) ([]byte, error) {
-	filename, found := scan.Candidates(job.Filename(), fileNames, configuration.App.Extensions())
+	filename, found := scan.Candidates(job.Filename(), fileNames, config.App.Extensions())
 	if !found {
 		return []byte{}, writecmd.NoFileErr
 	}

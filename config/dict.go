@@ -1,8 +1,8 @@
 package config
 
 import (
-	"github.com/vvval/go-metadata-scanner/configuration/vars"
-	vars2 "github.com/vvval/go-metadata-scanner/vars"
+	"github.com/vvval/go-metadata-scanner/configuration"
+	"github.com/vvval/go-metadata-scanner/vars"
 	"gopkg.in/yaml.v2"
 	"strings"
 )
@@ -13,38 +13,35 @@ type DictSchema struct {
 	Lists    []string            `yaml:"lists"`
 }
 
-func (c Dict) Schema() vars.Schema {
+func (c DictConfig) Schema() configuration.Schema {
 	return DictSchema{}
 }
 
-func (s DictSchema) Parse(data []byte) (vars.Config, error) {
+func (s DictSchema) Parse(data []byte) (configuration.Config, error) {
 	err := yaml.Unmarshal(data, &s)
 	if err != nil {
-		return Dict{}, err
+		return DictConfig{}, err
 	}
 
-	return Dict{
+	return DictConfig{
 		known:    s.Known,
 		booleans: s.Booleans,
 		lists:    s.Lists,
 	}, nil
 }
 
-type Dict struct {
+func (c DictConfig) MergeDefault(conf configuration.Config) configuration.Config {
+	// Has no default values
+	return c
+}
+
+type DictConfig struct {
 	known    map[string][]string
 	booleans []string
 	lists    []string
 }
 
-func (c Dict) MergeDefaults() vars.Config {
-	return c
-}
-
-func (c Dict) Filename() string {
-	return "./dict.yaml"
-}
-
-func (c Dict) Find(name string) (vars2.Tag, bool) {
+func (c DictConfig) Find(name string) (vars.Tag, bool) {
 	if tag, found := known(name, c.known); found {
 		return tag, found
 	}
@@ -64,15 +61,15 @@ func (c Dict) Find(name string) (vars2.Tag, bool) {
 	return notFound(name)
 }
 
-func (c Dict) IsBoolean(key, tag string) bool {
+func (c DictConfig) IsBoolean(key, tag string) bool {
 	return oneOf(key, tag, c.booleans)
 }
 
-func (c Dict) IsList(key, tag string) bool {
+func (c DictConfig) IsList(key, tag string) bool {
 	return oneOf(key, tag, c.lists)
 }
 
-func known(name string, lists map[string][]string) (vars2.Tag, bool) {
+func known(name string, lists map[string][]string) (vars.Tag, bool) {
 	for key, list := range lists {
 		if strings.EqualFold(key, name) {
 			return found(key, name, list)
@@ -88,12 +85,12 @@ func known(name string, lists map[string][]string) (vars2.Tag, bool) {
 	return notFound(name)
 }
 
-func found(key, name string, list []string) (vars2.Tag, bool) {
-	return vars2.NewFoundTag(key, name, list), true
+func found(key, name string, list []string) (vars.Tag, bool) {
+	return vars.NewFoundTag(key, name, list), true
 }
 
-func notFound(name string) (vars2.Tag, bool) {
-	return vars2.NewNotFoundTag(name), false
+func notFound(name string) (vars.Tag, bool) {
+	return vars.NewNotFoundTag(name), false
 }
 
 func oneOf(key, tag string, set []string) bool {

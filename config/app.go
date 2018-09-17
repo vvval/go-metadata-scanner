@@ -1,11 +1,11 @@
 package config
 
 import (
-	"github.com/vvval/go-metadata-scanner/configuration/vars"
+	"github.com/vvval/go-metadata-scanner/configuration"
 	"gopkg.in/yaml.v2"
 )
 
-type App struct {
+type AppConfig struct {
 	toolPath   string
 	extensions []string
 	fields     []string
@@ -17,43 +17,41 @@ type AppSchema struct {
 	Fields     []string `yaml:"fields"`
 }
 
-func (c App) MergeDefaults() vars.Config {
+func (c AppConfig) MergeDefault(conf configuration.Config) configuration.Config {
 	if len(c.toolPath) == 0 {
-		c.toolPath = "exiftool"
+		if conf, ok := conf.(AppConfig); ok {
+			c.toolPath = conf.toolPath
+		}
 	}
 
 	return c
 }
 
-func (c App) Filename() string {
-	return "./app.yaml"
-}
-
-func (c App) Schema() vars.Schema {
+func (c AppConfig) Schema() configuration.Schema {
 	return AppSchema{}
 }
 
-func (s AppSchema) Parse(data []byte) (vars.Config, error) {
+func (s AppSchema) Parse(data []byte) (configuration.Config, error) {
 	err := yaml.Unmarshal(data, &s)
 	if err != nil {
-		return App{}, err
+		return AppConfig{}, err
 	}
 
-	return App{
+	return AppConfig{
 		toolPath:   s.ToolPath,
 		extensions: s.Extensions,
 		fields:     s.Fields,
 	}, nil
 }
 
-func (c App) ToolPath() string {
+func (c AppConfig) ToolPath() string {
 	return c.toolPath
 }
 
-func (c App) Extensions() []string {
+func (c AppConfig) Extensions() []string {
 	return c.extensions
 }
 
-func (c App) Fields() []string {
+func (c AppConfig) Fields() []string {
 	return c.fields
 }

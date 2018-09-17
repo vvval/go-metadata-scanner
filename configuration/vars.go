@@ -1,9 +1,8 @@
-package vars
+package configuration
 
 type Config interface {
-	Filename() string
 	Schema() Schema
-	MergeDefaults() Config
+	MergeDefault(conf Config) Config
 }
 
 type Schema interface {

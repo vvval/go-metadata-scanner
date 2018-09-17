@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/vvval/go-metadata-scanner/cmd"
+	"github.com/vvval/go-metadata-scanner/config"
 	"github.com/vvval/go-metadata-scanner/configuration"
 	"github.com/vvval/go-metadata-scanner/util/log"
 	"github.com/wolfy-j/goffli/utils"
@@ -14,11 +15,10 @@ func init() {
 	log.Visibility.Failure = true
 	log.Visibility.Debug = true
 
-	configuration.LoadAll()
+	config.Dict = configuration.Load(config.Dict, "./dict.yaml").(config.DictConfig)
+	config.App = configuration.Load(config.App, "./app.yaml").(config.AppConfig)
 }
 
 func main() {
 	cmd.Execute()
-
-	//fmt.Printf("old %+v\nnew %+v\n\n\n", config.Get(), configurator.App)
 }

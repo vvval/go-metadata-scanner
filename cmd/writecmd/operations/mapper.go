@@ -1,8 +1,7 @@
 package operations
 
 import (
-	"github.com/vvval/go-metadata-scanner/configuration"
-	"github.com/vvval/go-metadata-scanner/configuration/config"
+	"github.com/vvval/go-metadata-scanner/config"
 	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/vars"
 	"github.com/vvval/go-metadata-scanner/vars/metadata"
@@ -23,7 +22,6 @@ import (
 // 		]
 func mapPayload(columns map[int]vars.Tag, input []string) metadata.Payload {
 	payload := metadata.New()
-	d := dictionary()
 
 	for index, value := range input {
 		t, ok := columns[index]
@@ -33,10 +31,10 @@ func mapPayload(columns map[int]vars.Tag, input []string) metadata.Payload {
 		}
 
 		for _, tag := range t.Map() {
-			if d.IsBoolean(t.Key(), tag) {
+			if config.Dict.IsBoolean(t.Key(), tag) {
 				payload.AddBool(tag, len(value) != 0)
 			} else if len(value) != 0 {
-				if d.IsList(t.Key(), tag) {
+				if config.Dict.IsList(t.Key(), tag) {
 					payload.AddList(tag, util.SplitKeywords(value))
 				} else {
 					payload.AddTag(tag, value)
@@ -51,7 +49,6 @@ func mapPayload(columns map[int]vars.Tag, input []string) metadata.Payload {
 // Map columns to a known tag map
 // Skip 1st column (dedicated to a file names) and empty columns
 func readColumns(columns []string) map[int]vars.Tag {
-	d := dictionary()
 	output := map[int]vars.Tag{}
 	for i, column := range columns {
 		column = strings.Trim(column, " ")
@@ -60,7 +57,7 @@ func readColumns(columns []string) map[int]vars.Tag {
 			continue
 		}
 
-		tag, found := d.Find(column)
+		tag, found := config.Dict.Find(column)
 		if !found {
 			// Skip not found columns
 			continue
@@ -70,8 +67,4 @@ func readColumns(columns []string) map[int]vars.Tag {
 	}
 
 	return output
-}
-
-func dictionary() config.Dict {
-	return configuration.Dict
 }
