@@ -35,7 +35,9 @@ go run main.go write -f folder/with/image/caption/file.csv -s ; -d folder/with/i
 #### Files match
 Files are searched using soft comparison of given filename in the caption file as endings for real files, 
 prefix can be any letter, then `_` char and `0` digit (none or any amount of).
-Also program tries to match the extension. If program will find several candidates with no strict match, such file will be omitted.
+Also program tries to match the extension.
+If program will find several candidates with no strict match, such file will be omitted. 
+Strict match means that full path matches the candidate (with or without proposed extension)
 Examples:
  
  * `1.png` will be searched as `0001.png` and `IMG_001.png`.

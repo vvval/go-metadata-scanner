@@ -29,7 +29,10 @@ func TestTokenizer(t *testing.T) {
 }
 
 func TestAdjustSize(t *testing.T) {
-	set := [][]int{
+	type check struct {
+		n, d, min, an, ad int
+	}
+	set := []check{
 		{10, 3, 5, 2, 5},
 		{10, 6, 5, 2, 5},
 		{10, 3, 3, 3, 4},
@@ -39,9 +42,9 @@ func TestAdjustSize(t *testing.T) {
 	}
 
 	for _, v := range set {
-		p, c := util.AdjustSizes(v[0], v[1], v[2])
-		if p != v[3] || c != v[4] {
-			t.Errorf("values are not equal:\ninput `%d`, `%d` and `%d`\ngot `%d` and `%d`\nexpected `%d` and `%d`", v[0], v[1], v[2], p, c, v[3], v[4])
+		p, c := util.AdjustSizes(v.n, v.d, v.min)
+		if p != v.an || c != v.ad {
+			t.Errorf("values are not equal:\ninput `%d`, `%d` and `%d`\ngot `%d` and `%d`\nexpected `%d` and `%d`", v.n, v.d, v.min, p, c, v.an, v.ad)
 		}
 	}
 }
@@ -74,19 +77,50 @@ func TestRand(t *testing.T) {
 	}
 }
 
-//func TestCandidates(t *testing.T) {
-//	//t.Error("test file")
-//}
-//
+func TestCandidates(t *testing.T) {
+	type check struct {
+		file  string
+		files vars.Chunk
+		ext   []string
+		exp   string
+	}
+
+	set := []check{
+		// Adding extension
+		{"1", vars.Chunk{"folder/1.png", "folder/2.png"}, []string{"png"}, "folder/1.png"},
+		// Adding extension even if file has it
+		{"1.png", vars.Chunk{"folder/1.png.ext", "folder/2.png"}, []string{"png", "ext"}, "folder/1.png.ext"},
+		// Adding prefixes ([a-z]?_0?)
+		{"1.png", vars.Chunk{"folder/01.png"}, []string{"png"}, "folder/01.png"},
+		{"1.png", vars.Chunk{"folder/img_01.png"}, []string{"png"}, "folder/img_01.png"},
+		// If prefix has letters, it should end with "underscore" char
+		{"1.png", vars.Chunk{"folder/img01.png"}, []string{"png"}, ""},
+		// Prefix can't have prefix made of non-zero digits
+		{"1.png", vars.Chunk{"folder/21.png"}, []string{"png"}, ""},
+		// If more than 1 candidate - ignore file
+		{"1.png", vars.Chunk{"folder/01.png", "folder/001.png"}, []string{"png", "ext"}, ""},
+		// But if has full match - it's fine
+		{"folder2/1", vars.Chunk{"folder2/1.png", "folder/01.png", "folder/001.png"}, []string{"png", "ext"}, "folder2/1.png"},
+		// This is not a full match, folder prefix is missing
+		{"1", vars.Chunk{"folder2/1.png", "folder/01.png", "folder/001.png"}, []string{"png", "ext"}, ""},
+	}
+
+	for _, v := range set {
+		c, _ := scan.Candidates(v.file, v.files, v.ext)
+		if c != v.exp {
+			t.Errorf("candidates incorrect for file `%s` and ext %+v:\ngot `%+v`\nexpected `%+v`", v.file, v.ext, c, v.exp)
+		}
+	}
+}
 
 func TestScanDir(t *testing.T) {
-	type dir struct {
+	type check struct {
 		dir      string
 		ext      []string
 		expected vars.Chunk
 	}
 
-	set := []dir{
+	set := []check{
 		{"./assets", []string{"ext", "ext3"}, vars.Chunk{
 			filepath.Join("assets", "subfolder1", "file1.ext"),
 			filepath.Join("assets", "subfolder2", "file3.ext3"),
@@ -113,10 +147,8 @@ func TestScanDir(t *testing.T) {
 		sort.Strings(res)
 		exp := v.expected
 		sort.Strings(exp)
-		if len(res) > 0 || len(exp) > 0 {
-			if !reflect.DeepEqual(res, exp) {
-				t.Errorf("scan dir incorrect for dir `%s` and ext %+v:\ngot `%+v`\nexpected `%+v`", v.dir, v.ext, res, exp)
-			}
+		if !reflect.DeepEqual(res, exp) && (len(res) > 0 || len(exp) > 0) {
+			t.Errorf("scan dir incorrect for dir `%s` and ext %+v:\ngot `%+v`\nexpected `%+v`", v.dir, v.ext, res, exp)
 		}
 	}
 }
