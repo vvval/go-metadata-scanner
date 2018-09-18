@@ -24,10 +24,12 @@ func (j *Job) HasPayload() bool {
 	return j.payload.Tags().Count() != 0
 }
 
-func (j *Job) MergePayload(t metadata.Tags) {
+func (j *Job) MergePayload(tags metadata.Tags) {
 	for _, tag := range j.payload.ListTags() {
-		scanned := interface2Slice(t[tag])
-		j.payload.UpdateList(tag, scanned)
+		if val, ok := tags.Tag(tag); ok {
+			scanned := interface2Slice(val)
+			j.payload.UpdateList(tag, scanned)
+		}
 	}
 }
 
