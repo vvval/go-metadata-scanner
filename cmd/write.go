@@ -44,7 +44,7 @@ func writeHandler(cmd *cobra.Command, args []string) {
 	if writeFlags.Append() {
 		log.Log("Scan files", "\"Append\" flag is enabled")
 
-		var poolSize, chunkSize = util.AdjustPoolSize(PoolSize, len(fileNames), MinChunkSize)
+		var poolSize, chunkSize = util.AdjustSizes(len(fileNames), PoolSize, MinChunkSize)
 		filesData = operations.ScanFiles(fileNames.Split(chunkSize), poolSize)
 
 		log.Log("Scanned", "\n")

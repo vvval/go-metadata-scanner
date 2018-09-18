@@ -41,7 +41,7 @@ func scanHandler(cmd *cobra.Command, args []string) {
 	log.Log("Scanning", util.Abs(scanFlags.Directory()))
 
 	var files = scan.MustDir(scanFlags.Directory(), config.App.Extensions())
-	poolSize, chunkSize := util.AdjustPoolSize(PoolSize, len(files), MinChunkSize)
+	poolSize, chunkSize := util.AdjustSizes(len(files), PoolSize, MinChunkSize)
 
 	var chunks = make(chan vars.Chunk)
 	var scannedFiles = make(chan vars.File)

@@ -4,15 +4,15 @@ import (
 	"math"
 )
 
-func AdjustPoolSize(poolSize, amount, minChunkSize int) (int, int) {
-	var chunkSize = ceil(amount, poolSize)
-	if chunkSize < minChunkSize {
-		chunkSize = minChunkSize
+func AdjustSizes(numerator, denominator, minValue int) (int, int) {
+	var value = ceil(numerator, denominator)
+	if value < minValue {
+		value = minValue
 
-		poolSize = ceil(amount, chunkSize)
+		denominator = ceil(numerator, value)
 	}
 
-	return poolSize, chunkSize
+	return denominator, value
 }
 
 func ceil(numerator, denominator int) int {
