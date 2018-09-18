@@ -120,7 +120,7 @@ func title(file *vars.File) string {
 func findTagValue(file *vars.File, field string) interface{} {
 	if tag, found := config.Dict.Find(field); found {
 		for _, name := range tag.Map() {
-			if value, ok := file.Tags()[name]; ok && value != nil {
+			if value, ok := file.Tags().Tag(name); ok && value != nil && value != "" {
 				return value
 			}
 		}

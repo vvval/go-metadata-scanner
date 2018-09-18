@@ -21,7 +21,7 @@ func (j *Job) Payload() metadata.Payload {
 }
 
 func (j *Job) HasPayload() bool {
-	return len(j.payload.Tags()) != 0
+	return j.payload.Tags().Count() != 0
 }
 
 func (j *Job) MergePayload(t metadata.Tags) {

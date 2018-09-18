@@ -8,10 +8,19 @@ const separator string = "<sep>"
 
 type Tags map[string]interface{}
 
+func (t Tags) Tag(tag string) (interface{}, bool) {
+	v, ok := t[tag]
+
+	return v, ok
+}
+
+func (t Tags) Count() int {
+	return len(t)
+}
+
 type Payload struct {
-	useSeparator bool
-	tags         Tags
-	lists        []string
+	tags  Tags
+	lists []string
 }
 
 func New() Payload {
@@ -23,7 +32,13 @@ func Separator() string {
 }
 
 func (p *Payload) UseSeparator() bool {
-	return p.useSeparator
+	for _, tag := range p.lists {
+		if strings.Contains(p.tags[tag].(string), separator) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (p *Payload) Tags() Tags {
@@ -41,7 +56,6 @@ func (p *Payload) AddBool(tag string, value bool) {
 func (p *Payload) AddList(tag string, value []string) {
 	p.tags[tag] = strings.Join(unique(value), separator)
 	p.lists = unique(append(p.lists, tag))
-	p.useSeparator = true
 }
 
 func (p *Payload) UpdateList(tag string, value []string) {
@@ -52,13 +66,14 @@ func (p *Payload) UpdateList(tag string, value []string) {
 
 	values := strings.Split(keywords, separator)
 	values = append(values, value...)
-	p.tags[tag] = strings.Join(unique(values), separator)
+	p.AddList(tag, values)
 }
 
 func unique(value []string) []string {
 	var m = make(map[string]bool)
 	var out []string
 	for _, v := range value {
+		v = strings.Trim(v, " ")
 		if _, ok := m[v]; !ok && len(v) > 0 {
 			m[v] = true
 			out = append(out, v)
