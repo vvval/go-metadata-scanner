@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	fileNames  vars.Chunk
+	files      vars.Chunk
 	filesData  []vars.File
 	writeFlags writecmd.Flags
 )
@@ -39,13 +39,13 @@ for proper mapping CSV data into appropriate metadata fields`,
 }
 
 func writeHandler(cmd *cobra.Command, args []string) {
-	fileNames = scan.MustDir(writeFlags.Directory(), config.App.Extensions())
+	files = scan.MustDir(writeFlags.Directory(), config.App.Extensions())
 
 	if writeFlags.Append() {
 		log.Log("Scan files", "\"Append\" flag is enabled")
 
-		var poolSize, chunkSize = util.AdjustSizes(len(fileNames), PoolSize, MinChunkSize)
-		filesData = operations.ScanFiles(fileNames.Split(chunkSize), poolSize)
+		var poolSize, chunkSize = util.AdjustSizes(len(files), PoolSize, MinChunkSize)
+		filesData = operations.ScanFiles(files.Split(chunkSize), poolSize)
 
 		log.Log("Scanned", "\n")
 	}
@@ -69,7 +69,7 @@ func writeHandler(cmd *cobra.Command, args []string) {
 }
 
 func poolWorker(job *writecmd.Job, append, originals bool) ([]byte, error) {
-	filename, found := scan.Candidates(job.Filename(), fileNames, config.App.Extensions())
+	filename, found := scan.Candidates(job.Filename(), files, config.App.Extensions())
 	if !found {
 		return []byte{}, writecmd.NoFileErr
 	}

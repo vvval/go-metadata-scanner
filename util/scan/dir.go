@@ -12,6 +12,7 @@ import (
 var files = map[string]string{}
 
 func MustDir(directory string, extensions []string) vars.Chunk {
+	files = make(map[string]string)
 	dirs, err := scanDir(directory, extensions)
 	if err != nil {
 		log.Fatalln(err)
@@ -37,6 +38,10 @@ func scanDir(directory string, extensions []string) (vars.Chunk, error) {
 }
 
 func visit(path string, f os.FileInfo, _ error) error {
+	if f == nil {
+		return nil
+	}
+
 	if !f.IsDir() {
 		path = strings.ToLower(path)
 		files[path] = util.Extension(path)
@@ -46,6 +51,10 @@ func visit(path string, f os.FileInfo, _ error) error {
 }
 
 func extensionMatch(extension string, extensions []string) bool {
+	if len(extensions) == 0 {
+		return true
+	}
+
 	for _, ext := range extensions {
 		if strings.EqualFold(extension, ext) {
 			return true
