@@ -39,3 +39,19 @@ func TestAdjustSize(t *testing.T) {
 		}
 	}
 }
+
+func TestExtension(t *testing.T) {
+	set := [][]string{
+		{"filename.ext", "ext"},
+		{".ext", "ext"},
+		{"filename", ""},
+		{"filename.", ""},
+	}
+
+	for _, str := range set {
+		ext := util.Extension(str[0])
+		if ext != str[1] {
+			t.Errorf("extensions not equal:\ngot `%s`\nexpected `%s`", ext, str[1])
+		}
+	}
+}
