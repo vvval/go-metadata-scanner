@@ -9,15 +9,6 @@ var Visibility struct {
 	Command, Log, Failure, Debug bool
 }
 
-var format struct {
-	log, err string
-}
-
-func init() {
-	format.log = "<cyan+hb>►</reset> <yellow+hb>%s</reset> <green+hb>%s</reset>\n"
-	format.err = "<red+hb>%s: %s</reset>\n"
-}
-
 func Debug(name string, args ...string) {
 	if !Visibility.Debug {
 		return
@@ -51,9 +42,9 @@ func Failure(name string, args ...string) {
 }
 
 func log(name string, args ...string) {
-	utils.Printf(format.log, name, strings.Join(args, " "))
+	utils.Printf("<cyan+hb>►</reset> <yellow+hb>%s</reset> <green+hb>%s</reset>\n", name, strings.Join(args, " "))
 }
 
 func logError(name string, args ...string) {
-	utils.Printf(format.err, name, strings.Join(args, " "))
+	utils.Printf("<red+hb>%s: %s</reset>\n", name, strings.Join(args, " "))
 }
