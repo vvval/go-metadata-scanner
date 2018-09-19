@@ -9,8 +9,8 @@ import (
 const sourceFileField string = "SourceFile"
 
 func parse(data []byte) []vars.File {
-	files := []vars.File{}
-	schema := []metadata.Tags{}
+	var files []vars.File
+	var schema []metadata.Tags
 
 	if err := json.Unmarshal(data, &schema); err == nil {
 		for _, element := range schema {

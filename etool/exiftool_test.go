@@ -20,10 +20,10 @@ func TestReadArgs(t *testing.T) {
 		{[]string{"a", "b"}, []string{}, []string{"-j", "-G", "-b", "a", "b"}},
 	}
 
-	for _, v := range set {
+	for i, v := range set {
 		p := packReadArgs(v.names, v.fields)
 		if !reflect.DeepEqual(p, v.exp) {
-			t.Errorf("Args mismatch for %s and %s:\ngot %s\nexpected %s", v.names, v.fields, p, v.exp)
+			t.Errorf("Args mismatch for %d:\ninput %s and %s:\ngot %s\nexpected %s", i, v.names, v.fields, p, v.exp)
 		}
 	}
 }

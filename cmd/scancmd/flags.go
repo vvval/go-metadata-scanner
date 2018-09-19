@@ -15,7 +15,7 @@ type Flags struct {
 }
 
 func (f Flags) Directory() string {
-	return filepath.ToSlash(f.directory)
+	return f.directory
 }
 
 func (f Flags) Filename() string {

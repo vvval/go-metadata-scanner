@@ -15,7 +15,7 @@ func Candidates(filename string, files vars.Chunk, extensions []string) (string,
 	for _, file := range files {
 		for _, ending := range endings {
 			if strings.EqualFold(file, ending) {
-				return filepath.ToSlash(file), true
+				return file, true
 			}
 
 			reg = regexp.MustCompile("^(([a-zA-Z]{1,}_)?0*)?" + regexp.QuoteMeta(filepath.Base(ending)) + "$")
@@ -31,7 +31,7 @@ func Candidates(filename string, files vars.Chunk, extensions []string) (string,
 	}
 
 	if len(values) == 1 {
-		return filepath.ToSlash(values[0]), true
+		return values[0], true
 	}
 
 	return "", false

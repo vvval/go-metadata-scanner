@@ -6,24 +6,6 @@ import (
 	"testing"
 )
 
-func TestFile(t *testing.T) {
-	filename := "file\\with/different/slashes\\usage"
-	file := NewFile(filename, metadata.Tags{})
-	filenameSlashes := "file/with/different/slashes/usage"
-
-	if file.Filename() != filenameSlashes {
-		t.Errorf("filename should be converted to slashes format:\ngot `%s`\nexpected `%s`", file.Filename(), filenameSlashes)
-	}
-
-	dir := "file/with"
-	file.WithRelPath(dir)
-	relPath := "different/slashes/usage"
-
-	if file.RelPath() != relPath {
-		t.Errorf("rel path should converted to slashes format:\ngot `%s`\nexpected `%s`", file.RelPath(), relPath)
-	}
-}
-
 func TestChunk(t *testing.T) {
 	chunk := Chunk{"a", "b", "c", "d"}
 

@@ -43,3 +43,22 @@ func Abs(path string) string {
 
 	return path
 }
+
+func PathsEqual(p1, p2 string) bool {
+	p1 = strings.TrimRight(p1, "/\\")
+	p2 = strings.TrimRight(p2, "/\\")
+
+	if p1 == p2 {
+		return true
+	}
+
+	if filepath.FromSlash(p1) == filepath.FromSlash(p2) {
+		return true
+	}
+
+	if filepath.ToSlash(p1) == filepath.ToSlash(p2) {
+		return true
+	}
+
+	return false
+}

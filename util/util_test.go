@@ -4,6 +4,32 @@ import (
 	"testing"
 )
 
+func TestPathsEqual(t *testing.T) {
+	type check struct {
+		a, b string
+		exp  bool
+	}
+
+	set := []check{
+		{"file\\with/different/slashes\\usage", "file/with\\different/slashes/usage", true},
+		{"file\\with/different/slashes\\usage", "file/with/different/slashes/usage", true},
+		{"file/with/different/slashes/usage", "file\\with\\different\\slashes\\usage", true},
+		{"file\\with\\different\\slashes\\usage", "file\\with\\different\\slashes\\usage", true},
+		{"file/with/different/slashes/usage", "file/with/different/slashes/usage", true},
+		{"file/with/different/slashes/usage", "file/with/different/slashes/usage/", true},
+		{"file/with/different/slashes/usage\\", "file/with/different/slashes/usage/", true},
+		{"file/with/different/slashes/usage\\", "file/with/different/slashes/usage", true},
+		{"file/with/different/slashes/usage\\", "file/with/different/slashes/usage/oops", false},
+	}
+
+	for i, s := range set {
+		c := PathsEqual(s.a, s.b)
+		if c != s.exp {
+			t.Errorf("values compare failed for %d:\ninput `%s`, `%s`\ngot `%t` \nexpected `%t`", i, s.a, s.b, c, s.exp)
+		}
+	}
+}
+
 func TestTokenizer(t *testing.T) {
 	set := map[string][]string{
 		"a,b,,c, d": {"a", "b", "c", "d"},
@@ -33,10 +59,10 @@ func TestAdjustSize(t *testing.T) {
 		{10, 3, 9, 2, 9},
 	}
 
-	for _, v := range set {
+	for i, v := range set {
 		p, c := AdjustSizes(v.n, v.d, v.min)
 		if p != v.an || c != v.ad {
-			t.Errorf("values are not equal:\ninput `%d`, `%d` and `%d`\ngot `%d` and `%d`\nexpected `%d` and `%d`", v.n, v.d, v.min, p, c, v.an, v.ad)
+			t.Errorf("values are not equal for %d:\ninput `%d`, `%d` and `%d`\ngot `%d` and `%d`\nexpected `%d` and `%d`", i, v.n, v.d, v.min, p, c, v.an, v.ad)
 		}
 	}
 }
@@ -49,10 +75,10 @@ func TestExtension(t *testing.T) {
 		{"filename.", ""},
 	}
 
-	for _, str := range set {
+	for i, str := range set {
 		ext := Extension(str[0])
 		if ext != str[1] {
-			t.Errorf("extensions not equal:\ngot `%s`\nexpected `%s`", ext, str[1])
+			t.Errorf("extensions not equal for %d:\ngot `%s`\nexpected `%s`", i, ext, str[1])
 		}
 	}
 }

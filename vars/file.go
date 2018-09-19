@@ -13,7 +13,7 @@ type File struct {
 
 func NewFile(filename string, tags metadata.Tags) File {
 	return File{
-		filename: filepath.ToSlash(filename),
+		filename: filename,
 		tags:     tags,
 	}
 }
@@ -25,10 +25,10 @@ func (f *File) Filename() string {
 func (f *File) WithRelPath(base string) {
 	rel, err := filepath.Rel(base, f.filename)
 	if err != nil {
-		f.relPath = filepath.ToSlash(f.filename)
+		f.relPath = f.filename
+	} else {
+		f.relPath = rel
 	}
-
-	f.relPath = filepath.ToSlash(rel)
 }
 
 func (f *File) RelPath() string {

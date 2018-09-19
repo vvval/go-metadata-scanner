@@ -3,7 +3,6 @@ package writecmd
 import (
 	"fmt"
 	"github.com/vvval/go-metadata-scanner/vars/metadata"
-	"path/filepath"
 	"reflect"
 )
 
@@ -47,5 +46,5 @@ func interface2Slice(slice interface{}) []string {
 }
 
 func NewJob(filename string, payload metadata.Payload) *Job {
-	return &Job{filepath.ToSlash(filename), payload}
+	return &Job{filename, payload}
 }

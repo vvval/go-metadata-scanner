@@ -35,10 +35,10 @@ func TestCandidates(t *testing.T) {
 		{"1", vars.Chunk{"folder2/1.png", "folder/01.png", "folder/001.png"}, []string{"png", "ext"}, ""},
 	}
 
-	for _, v := range set {
+	for i, v := range set {
 		c, _ := Candidates(v.file, v.files, v.ext)
 		if c != v.exp {
-			t.Errorf("candidates incorrect for file `%s` and ext %+v:\ngot `%+v`\nexpected `%+v`", v.file, v.ext, c, v.exp)
+			t.Errorf("candidates incorrect for file `%s` (%d) and ext %+v:\ngot `%+v`\nexpected `%+v`", v.file, i, v.ext, c, v.exp)
 		}
 	}
 }
@@ -72,11 +72,11 @@ func TestScanDir(t *testing.T) {
 		}},
 	}
 
-	for _, v := range set {
+	for i, v := range set {
 		res := MustDir(v.dir, v.ext)
 		exp := v.exp
 		if !util.Equal(res, exp) && (len(res) > 0 || len(exp) > 0) {
-			t.Errorf("scan dir incorrect for dir `%s` and ext %+v:\ngot `%+v`\nexpected `%+v`", v.dir, v.ext, res, exp)
+			t.Errorf("scan dir incorrect for dir `%s` (%d) and ext %+v:\ngot `%+v`\nexpected `%+v`", v.dir, i, v.ext, res, exp)
 		}
 	}
 }

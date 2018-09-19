@@ -97,7 +97,7 @@ func poolWorker(job *writecmd.Job, append, originals bool) ([]byte, error) {
 
 func findScanned(filename string, files *[]vars.File) (vars.File, bool) {
 	for _, file := range *files {
-		if file.Filename() == filename {
+		if util.PathsEqual(file.Filename(), filename) {
 			return file, true
 		}
 	}
