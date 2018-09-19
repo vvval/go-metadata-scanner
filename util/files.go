@@ -52,15 +52,21 @@ func PathsEqual(p1, p2 string) bool {
 		return true
 	}
 
-	p1to := filepath.ToSlash(p1)
-	p1from := filepath.FromSlash(p1)
+	p1 = strings.Replace(p1, "/", string(os.PathSeparator), -1)
+	p1 = strings.Replace(p1, "\\", string(os.PathSeparator), -1)
+	p2 = strings.Replace(p2, "/", string(os.PathSeparator), -1)
+	p2 = strings.Replace(p2, "\\", string(os.PathSeparator), -1)
 
-	p2to := filepath.ToSlash(p2)
-	p2from := filepath.FromSlash(p2)
-
-	if p1to == p2to || p1to == p2from || p1from == p2to || p1from == p2from {
-		return true
-	}
-
-	return false
+	return p1 == p2
+	//p1to := filepath.ToSlash(p1)
+	//p1from := filepath.FromSlash(p1)
+	//
+	//p2to := filepath.ToSlash(p2)
+	//p2from := filepath.FromSlash(p2)
+	//
+	//if p1to == p2to || p1to == p2from || p1from == p2to || p1from == p2from {
+	//	return true
+	//}
+	//
+	//return false
 }
