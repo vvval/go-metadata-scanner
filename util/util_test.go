@@ -25,7 +25,7 @@ func TestPathsEqual(t *testing.T) {
 	for i, s := range set {
 		c := PathsEqual(s.a, s.b)
 		if c != s.exp {
-			t.Errorf("values compare failed for %d:\ninput `%s`, `%s`\ngot `%t` \nexpected `%t`", i, s.a, s.b, c, s.exp)
+			t.Errorf("values compare failed (line `%d`):\ninput `%s`, `%s`\ngot `%t` \nexpected `%t`", i, s.a, s.b, c, s.exp)
 		}
 	}
 }
@@ -62,7 +62,7 @@ func TestAdjustSize(t *testing.T) {
 	for i, v := range set {
 		p, c := AdjustSizes(v.n, v.d, v.min)
 		if p != v.an || c != v.ad {
-			t.Errorf("values are not equal for %d:\ninput `%d`, `%d` and `%d`\ngot `%d` and `%d`\nexpected `%d` and `%d`", i, v.n, v.d, v.min, p, c, v.an, v.ad)
+			t.Errorf("values are not equal (line `%d`):\ninput `%d`, `%d` and `%d`\ngot `%d` and `%d`\nexpected `%d` and `%d`", i, v.n, v.d, v.min, p, c, v.an, v.ad)
 		}
 	}
 }
@@ -78,7 +78,7 @@ func TestExtension(t *testing.T) {
 	for i, str := range set {
 		ext := Extension(str[0])
 		if ext != str[1] {
-			t.Errorf("extensions not equal for %d:\ngot `%s`\nexpected `%s`", i, ext, str[1])
+			t.Errorf("extensions not equal (line `%d`):\ngot `%s`\nexpected `%s`", i, ext, str[1])
 		}
 	}
 }
@@ -99,7 +99,7 @@ func TestEqual(t *testing.T) {
 	for i, v := range set {
 		res := Equal(v.a, v.b)
 		if res != v.exp {
-			t.Errorf("equality failed for %d:\ngot `%t` \nexpected `%t`", i, res, v.exp)
+			t.Errorf("equality failed (line `%d`):\ngot `%t` \nexpected `%t`", i, res, v.exp)
 		}
 	}
 }
@@ -118,7 +118,7 @@ func TestUnique(t *testing.T) {
 	for i, v := range set {
 		res := UniqueValues(v.a)
 		if !Equal(res, v.b) {
-			t.Errorf("equality failed for %d:\ngot `%s` \nexpected `%s`", i, res, v.b)
+			t.Errorf("equality failed (line `%d`):\ngot `%s` \nexpected `%s`", i, res, v.b)
 		}
 	}
 }

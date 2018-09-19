@@ -31,7 +31,7 @@ func TestAppConfig(t *testing.T) {
 	for i, s := range set {
 		m := s.a.MergeDefault(s.b).(AppConfig)
 		if m.toolPath != s.exp.toolPath || !util.Equal(m.fields, s.exp.fields) || !util.Equal(m.extensions, s.exp.extensions) {
-			t.Errorf("merge failed for %d:\ngot %v\nexpected %v", i, m, s.exp)
+			t.Errorf("merge failed (line `%d`):\ngot `%v`\nexpected `%v`", i, m, s.exp)
 		}
 	}
 }
@@ -62,7 +62,7 @@ func TestDictConfig(t *testing.T) {
 	for i, s := range set {
 		m := s.a.MergeDefault(s.b).(DictConfig)
 		if !mapEqual(m.known, s.exp.known) || !util.Equal(m.booleans, s.exp.booleans) || !util.Equal(m.lists, s.exp.lists) {
-			t.Errorf("merge failed for %d:\ngot %v\nexpected %v", i, m, s.exp)
+			t.Errorf("merge failed (line `%d`):\ngot `%v`\nexpected `%v`", i, m, s.exp)
 		}
 	}
 }
@@ -81,7 +81,7 @@ func TestMSCSV(t *testing.T) {
 	for i, s := range set {
 		m := s.a.MergeDefault(s.b).(MSCSVConfig)
 		if m.provider != s.exp.provider {
-			t.Errorf("merge failed for %d:\ngot %v\nexpected %v", i, m, s.exp)
+			t.Errorf("merge failed (line `%d`):\ngot `%v`\nexpected `%v`", i, m, s.exp)
 		}
 	}
 }

@@ -23,7 +23,7 @@ func TestReadArgs(t *testing.T) {
 	for i, v := range set {
 		p := packReadArgs(v.names, v.fields)
 		if !reflect.DeepEqual(p, v.exp) {
-			t.Errorf("Args mismatch for %d:\ninput %s and %s:\ngot %s\nexpected %s", i, v.names, v.fields, p, v.exp)
+			t.Errorf("Args mismatch (line `%d`):\ninput `%s` and `%s`:\ngot `%s`\nexpected `%s`", i, v.names, v.fields, p, v.exp)
 		}
 	}
 }
@@ -52,7 +52,7 @@ func TestWriteArgs(t *testing.T) {
 	for i, v := range set {
 		p := packWriteArgs(v.name, v.tags, v.useSep, v.originals)
 		if !util.Equal(p, v.exp) {
-			t.Errorf("Args mismatch for %d check\ngot %+v\nexp %+v", i, p, v.exp)
+			t.Errorf("Args mismatch (line `%d`) check\ngot `%+v`\nexp `%+v`", i, p, v.exp)
 		}
 	}
 }

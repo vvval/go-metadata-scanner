@@ -12,7 +12,7 @@ func TestRand(t *testing.T) {
 	for i, n := range set {
 		str := Strings(n)
 		if len(str) != n || !reg.MatchString(str) {
-			t.Errorf("random string incorrect for %d:\ngot `%s` of length `%d`\nexpected a-zA-A0-9 regex of `%d` length", i, str, len(str), n)
+			t.Errorf("random string incorrect (line `%d`):\ngot `%s` of length `%d`\nexpected `a-zA-A0-9` regex of `%d` length", i, str, len(str), n)
 		}
 	}
 

@@ -17,9 +17,9 @@ func TestChunk(t *testing.T) {
 		{chunk.Split(5), {Chunk{"a", "b", "c", "d"}}},
 	}
 
-	for _, s := range setEqual {
+	for i, s := range setEqual {
 		if !reflect.DeepEqual(s[0], s[1]) {
-			t.Errorf("chunks should be equal:\ngot `%s`\nexpected `%s`", s[0], s[1])
+			t.Errorf("chunks should be equal (line `%d`):\ngot `%s`\nexpected `%s`", i, s[0], s[1])
 		}
 	}
 
@@ -29,9 +29,9 @@ func TestChunk(t *testing.T) {
 		{chunk.Split(3), {Chunk{"a", "b", "d"}, Chunk{"e"}}},
 	}
 
-	for _, s := range setUnequal {
+	for i, s := range setUnequal {
 		if reflect.DeepEqual(s[0], s[1]) {
-			t.Errorf("chunks should not be equal:\ngot `%s`\nexpected `%s`", s[0], s[1])
+			t.Errorf("chunks should not be equal (line `%d`):\ngot `%s`\nexpected `%s`", i, s[0], s[1])
 		}
 	}
 }

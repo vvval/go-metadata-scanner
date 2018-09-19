@@ -38,7 +38,7 @@ func TestCandidates(t *testing.T) {
 	for i, v := range set {
 		c, _ := Candidates(v.file, v.files, v.ext)
 		if c != v.exp {
-			t.Errorf("candidates incorrect for file `%s` (%d) and ext %+v:\ngot `%+v`\nexpected `%+v`", v.file, i, v.ext, c, v.exp)
+			t.Errorf("candidates incorrect for file `%s` (line `%d`) and ext `%+v`:\ngot `%+v`\nexpected `%+v`", v.file, i, v.ext, c, v.exp)
 		}
 	}
 }
@@ -76,7 +76,7 @@ func TestScanDir(t *testing.T) {
 		res := MustDir(v.dir, v.ext)
 		exp := v.exp
 		if !util.Equal(res, exp) && (len(res) > 0 || len(exp) > 0) {
-			t.Errorf("scan dir incorrect for dir `%s` (%d) and ext %+v:\ngot `%+v`\nexpected `%+v`", v.dir, i, v.ext, res, exp)
+			t.Errorf("scan dir incorrect for dir `%s` (line `%d`) and ext `%+v`:\ngot `%+v`\nexpected `%+v`", v.dir, i, v.ext, res, exp)
 		}
 	}
 }

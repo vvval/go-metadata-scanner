@@ -1,7 +1,6 @@
 package configuration
 
 import (
-	"fmt"
 	"github.com/vvval/go-metadata-scanner/util"
 	"gopkg.in/yaml.v2"
 	"reflect"
@@ -27,7 +26,7 @@ func TestAppLoad(t *testing.T) {
 	for i, s := range set {
 		l := Load(s.conf, s.file)
 		if !reflect.DeepEqual(l, s.exp) {
-			t.Errorf("load failed for %d:\ngot %s\nexpected %s", i, l, s.exp)
+			t.Errorf("load failed (line `%d`):\ngot `%s`\nexpected `%s`", i, l, s.exp)
 		}
 	}
 }
@@ -57,7 +56,6 @@ func (c testConfig) MergeDefault(conf Config) Config {
 
 	c.arrayValue = util.UniqueValues(append(c.arrayValue, conf.(testConfig).arrayValue...))
 
-	fmt.Printf("= %+v\n\n", c)
 	return c
 }
 
