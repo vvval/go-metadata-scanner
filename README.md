@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/vvval/go-metadata-scanner.svg?branch=master)](https://travis-ci.org/vvval/go-metadata-scanner)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/vvval/go-metadata-scanner/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/vvval/go-metadata-scanner/?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/vvval/go-metadata-scanner/badge.svg?branch=master)](https://coveralls.io/github/vvval/go-metadata-scanner?branch=master)
+
 # go-metadata-scanner
 Simple app with ability to scan images metadata into output file or read metadata from input file and bulk update the photos
 
