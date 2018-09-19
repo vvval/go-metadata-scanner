@@ -86,7 +86,8 @@ func poolWorker(job *writecmd.Job, append, originals bool) ([]byte, error) {
 
 	result, err := etool.Write(
 		filename,
-		job.Payload(),
+		job.Payload().Tags(),
+		job.Payload().UseSeparator(),
 		originals,
 	)
 

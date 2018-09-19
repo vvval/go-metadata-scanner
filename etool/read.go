@@ -9,6 +9,10 @@ import (
 var readFlags = []string{"-j", "-G", "-b"}
 
 func Read(names vars.Chunk, fields []string) ([]byte, error) {
+	return run(config.App.ToolPath(), packReadArgs(names, fields)...)
+}
+
+func packReadArgs(names vars.Chunk, fields []string) []string {
 	var args = readFlags
 
 	for _, field := range fields {
@@ -17,5 +21,5 @@ func Read(names vars.Chunk, fields []string) ([]byte, error) {
 
 	args = append(args, names...)
 
-	return run(config.App.ToolPath(), args...)
+	return args
 }

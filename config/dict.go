@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/vvval/go-metadata-scanner/configuration"
+	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/vars"
 	"gopkg.in/yaml.v2"
 	"strings"
@@ -31,7 +32,15 @@ func (s DictSchema) Parse(data []byte) (configuration.Config, error) {
 }
 
 func (c DictConfig) MergeDefault(conf configuration.Config) configuration.Config {
-	// Has no default values
+	for k, v := range conf.(DictConfig).known {
+		if _, ok := c.known[k]; !ok {
+			c.known[k] = v
+		}
+	}
+
+	c.booleans = util.UniqueValues(append(c.booleans, conf.(DictConfig).booleans...))
+	c.lists = util.UniqueValues(append(c.lists, conf.(DictConfig).lists...))
+
 	return c
 }
 

@@ -6,22 +6,28 @@ import (
 	"github.com/vvval/go-metadata-scanner/vars/metadata"
 )
 
-func Write(name string, payload metadata.Payload, saveOriginals bool) ([]byte, error) {
+const overwriteFlag string = "-overwrite_original"
+
+func Write(name string, tags metadata.Tags, useSeparator, saveOriginals bool) ([]byte, error) {
+	return run(config.App.ToolPath(), packWriteArgs(name, tags, useSeparator, saveOriginals)...)
+}
+
+func packWriteArgs(name string, tags metadata.Tags, useSeparator bool, saveOriginals bool) []string {
 	var args []string
 
-	for tag, value := range payload.Tags() {
+	for tag, value := range tags {
 		args = append(args, fmt.Sprintf("-%s=%v", tag, value))
 	}
 
-	if payload.UseSeparator() {
+	if useSeparator {
 		args = append(args, "-sep", metadata.Separator())
 	}
 
 	if !saveOriginals {
-		args = append(args, "-overwrite_original")
+		args = append(args, overwriteFlag)
 	}
 
 	args = append(args, name)
 
-	return run(config.App.ToolPath(), args...)
+	return args
 }

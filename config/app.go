@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/vvval/go-metadata-scanner/configuration"
+	"github.com/vvval/go-metadata-scanner/util"
 	"gopkg.in/yaml.v2"
 )
 
@@ -19,10 +20,11 @@ type AppSchema struct {
 
 func (c AppConfig) MergeDefault(conf configuration.Config) configuration.Config {
 	if len(c.toolPath) == 0 {
-		if conf, ok := conf.(AppConfig); ok {
-			c.toolPath = conf.toolPath
-		}
+		c.toolPath = conf.(AppConfig).toolPath
 	}
+
+	c.extensions = util.UniqueValues(append(c.extensions, conf.(AppConfig).extensions...))
+	c.fields = util.UniqueValues(append(c.fields, conf.(AppConfig).fields...))
 
 	return c
 }

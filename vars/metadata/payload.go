@@ -1,6 +1,7 @@
 package metadata
 
 import (
+	"github.com/vvval/go-metadata-scanner/util"
 	"strings"
 )
 
@@ -54,8 +55,8 @@ func (p *Payload) AddBool(tag string, value bool) {
 }
 
 func (p *Payload) AddList(tag string, value []string) {
-	p.tags[tag] = strings.Join(unique(value), separator)
-	p.lists = unique(append(p.lists, tag))
+	p.tags[tag] = strings.Join(util.UniqueValues(value), separator)
+	p.lists = util.UniqueValues(append(p.lists, tag))
 }
 
 func (p *Payload) UpdateList(tag string, value []string) {
@@ -67,20 +68,6 @@ func (p *Payload) UpdateList(tag string, value []string) {
 	values := strings.Split(keywords, separator)
 	values = append(values, value...)
 	p.AddList(tag, values)
-}
-
-func unique(value []string) []string {
-	var m = make(map[string]bool)
-	var out []string
-	for _, v := range value {
-		v = strings.Trim(v, " ")
-		if _, ok := m[v]; !ok && len(v) > 0 {
-			m[v] = true
-			out = append(out, v)
-		}
-	}
-
-	return out
 }
 
 func (p *Payload) AddTag(tag string, value string) {
