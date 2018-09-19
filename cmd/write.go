@@ -5,7 +5,6 @@ import (
 	"github.com/vvval/go-metadata-scanner/cmd/writecmd"
 	"github.com/vvval/go-metadata-scanner/cmd/writecmd/operations"
 	"github.com/vvval/go-metadata-scanner/config"
-	"github.com/vvval/go-metadata-scanner/etool"
 	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/util/log"
 	"github.com/vvval/go-metadata-scanner/util/scan"
@@ -52,7 +51,9 @@ func writeHandler(cmd *cobra.Command, args []string) {
 
 	var wg sync.WaitGroup
 	jobs := make(chan *writecmd.Job)
-	writecmd.CreatePool(&wg, poolSize, jobs, poolWorker, writeFlags.Append(), writeFlags.Originals())
+	writecmd.CreatePool(&wg, poolSize, jobs, func(job *writecmd.Job) ([]byte, error) {
+		return writecmd.Work(job, writeFlags.Append(), writeFlags.Originals(), config.App.Extensions(), &files, &filesData)
+	})
 
 	file := util.MustOpenReadonlyFile(writeFlags.Filename())
 	defer file.Close()
@@ -66,41 +67,4 @@ func writeHandler(cmd *cobra.Command, args []string) {
 	close(jobs)
 
 	log.Log("Writing", "done")
-}
-
-func poolWorker(job *writecmd.Job, append, originals bool) ([]byte, error) {
-	filename, found := scan.Candidates(job.Filename(), files, config.App.Extensions())
-	if !found {
-		return []byte{}, writecmd.NoFileErr
-	}
-
-	if append {
-		if file, found := findScanned(filename, &filesData); found {
-			job.MergePayload(file.Tags())
-		}
-	}
-
-	if !job.HasPayload() {
-		return []byte{}, writecmd.SkipFileErr
-	}
-
-	payload := job.Payload()
-	result, err := etool.Write(
-		filename,
-		payload.Tags(),
-		payload.UseSeparator(),
-		originals,
-	)
-
-	return result, err
-}
-
-func findScanned(filename string, files *[]vars.File) (vars.File, bool) {
-	for _, file := range *files {
-		if util.PathsEqual(file.Filename(), filename) {
-			return file, true
-		}
-	}
-
-	return vars.File{}, false
 }

@@ -10,8 +10,7 @@ func CreatePool(
 	wg *sync.WaitGroup,
 	poolSize int,
 	jobs <-chan *Job,
-	poolWorkerFunc func(job *Job, append, originals bool) ([]byte, error),
-	append, originals bool,
+	poolWorkerFunc func(job *Job) ([]byte, error),
 ) {
 	// worker pool
 	for i := 0; i < poolSize; i++ {
@@ -23,7 +22,7 @@ func CreatePool(
 						return
 					}
 
-					_, err := poolWorkerFunc(job, append, originals)
+					_, err := poolWorkerFunc(job)
 					if err != nil {
 						logError(job.Filename(), err)
 					}

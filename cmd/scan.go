@@ -61,7 +61,7 @@ func scanHandler(cmd *cobra.Command, args []string) {
 
 	outputFilename := randomizeOutputFilename(scanFlags.Filename())
 
-	headers := packHeaders()
+	headers := packHeaders(config.App.Fields())
 	wr, err := writers.Get(scanFlags.Format())
 	if err != nil {
 		log.Failure("Output writer", err.Error())
@@ -95,10 +95,10 @@ func randomizeOutputFilename(path string) string {
 	return filepath.Join(dir, base[0:len(base)-len(ext)]+"-"+hash+ext)
 }
 
-func packHeaders() []string {
+func packHeaders(fields []string) []string {
 	headers := []string{"filename"}
 
-	for _, field := range config.App.Fields() {
+	for _, field := range fields {
 		headers = append(headers, field)
 	}
 

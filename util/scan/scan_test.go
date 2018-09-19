@@ -36,7 +36,7 @@ func TestCandidates(t *testing.T) {
 	}
 
 	for i, v := range set {
-		c, _ := Candidates(v.file, v.files, v.ext)
+		c, _ := Candidates(v.file, &v.files, v.ext)
 		if c != v.exp {
 			t.Errorf("candidates incorrect for file `%s` (line `%d`) and ext `%+v`:\ngot `%+v`\nexpected `%+v`", v.file, i, v.ext, c, v.exp)
 		}

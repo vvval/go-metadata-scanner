@@ -7,12 +7,12 @@ import (
 	"strings"
 )
 
-func Candidates(filename string, files vars.Chunk, extensions []string) (string, bool) {
+func Candidates(filename string, files *vars.Chunk, extensions []string) (string, bool) {
 	endings := extEndings(filename, extensions)
 	var candidates = make(map[string]bool)
 	var reg = &regexp.Regexp{}
 
-	for _, file := range files {
+	for _, file := range *files {
 		for _, ending := range endings {
 			if strings.EqualFold(file, ending) {
 				return file, true
