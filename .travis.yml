@@ -15,6 +15,7 @@ install:
 
 script:
 - go test ./config -race -v -coverprofile=config.txt -covermode=atomic
+- go test ./configuration -race -v -coverprofile=configuration.txt -covermode=atomic
 - go test ./util -race -v -coverprofile=util.txt -covermode=atomic
 - go test ./util/rand -race -v -coverprofile=utilRand.txt -covermode=atomic
 - go test ./util/scan -race -v -coverprofile=utilScan.txt -covermode=atomic
@@ -24,6 +25,7 @@ script:
 
 after_success:
 - bash <(curl -s https://codecov.io/bash) -f config.txt
+- bash <(curl -s https://codecov.io/bash) -f configuration.txt
 - bash <(curl -s https://codecov.io/bash) -f util.txt
 - bash <(curl -s https://codecov.io/bash) -f utilScan.txt
 - bash <(curl -s https://codecov.io/bash) -f etool.txt
