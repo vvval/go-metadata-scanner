@@ -23,7 +23,10 @@ func (s MSCSVSchema) Parse(data []byte) (configuration.Config, error) {
 }
 
 func (c MSCSVConfig) MergeDefault(conf configuration.Config) configuration.Config {
-	// Has no default values
+	if len(c.provider) == 0 {
+		c.provider = conf.(MSCSVConfig).provider
+	}
+
 	return c
 }
 

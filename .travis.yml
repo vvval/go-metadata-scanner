@@ -14,6 +14,7 @@ install:
 - go get -u "github.com/spiral/roadrunner/cmd/rr/utils"
 
 script:
+- go test ./config -race -v -coverprofile=config.txt -covermode=atomic
 - go test ./util -race -v -coverprofile=util.txt -covermode=atomic
 - go test ./util/rand -race -v -coverprofile=utilRand.txt -covermode=atomic
 - go test ./util/scan -race -v -coverprofile=utilScan.txt -covermode=atomic
@@ -22,6 +23,7 @@ script:
 - go test ./vars/metadata -race -v -coverprofile=varsMetadata.txt -covermode=atomic
 
 after_success:
+- bash <(curl -s https://codecov.io/bash) -f config.txt
 - bash <(curl -s https://codecov.io/bash) -f util.txt
 - bash <(curl -s https://codecov.io/bash) -f utilScan.txt
 - bash <(curl -s https://codecov.io/bash) -f etool.txt
