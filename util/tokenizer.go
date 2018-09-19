@@ -20,44 +20,56 @@ var (
 	trimRunes = `,; "`
 )
 
+type tokenizer struct {
+	keyword   string
+	keywords  []string
+	lastIndex int
+	quotFound bool
+}
+
+var t tokenizer
+
+func (t *tokenizer) addKeyword(input string, index int) {
+	keyword := fetchKeyword(input, t.lastIndex, index)
+	t.lastIndex = index
+
+	if len(keyword) != 0 {
+		t.append(keyword)
+	}
+}
+
+func (t *tokenizer) append(keyword string) {
+	t.keywords = append(t.keywords, keyword)
+}
+
+func (t *tokenizer) toggleQuot() {
+	t.quotFound = !t.quotFound
+}
+
 func SplitKeywords(input string) []string {
-	var (
-		keyword   string
-		keywords  []string
-		lastIndex int
-		quotFound bool
-	)
+	t = tokenizer{}
 
 	for index, r := range []rune(input) {
-		if unicode.In(r, separators) && !quotFound {
-			keyword = fetchKeyword(input, lastIndex, index)
-			lastIndex = index
-
-			if len(keyword) != 0 {
-				keywords = append(keywords, keyword)
-			}
+		if unicode.In(r, separators) && !t.quotFound {
+			t.addKeyword(input, index)
 
 			continue
 		}
 
 		if index == len(input)-1 {
-			keyword = fetchKeyword(input, lastIndex, len(input))
-			lastIndex = index
-
-			if len(keyword) != 0 {
-				keywords = append(keywords, keyword)
-			}
+			t.addKeyword(input, len(input))
 
 			continue
 		}
 
 		if unicode.In(r, quotationMarks) {
-			quotFound = !quotFound
+			t.toggleQuot()
+
 			continue
 		}
 	}
 
-	return keywords
+	return t.keywords
 }
 
 func fetchKeyword(input string, start, end int) string {
@@ -69,5 +81,10 @@ func trim(input string) string {
 }
 
 func cut(input string, start, end int) string {
-	return string([]rune(input)[start:end])
+	r := []rune(input)
+	if end > len(r) {
+		end = len(r)
+	}
+
+	return string(r[start:end])
 }

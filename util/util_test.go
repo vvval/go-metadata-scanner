@@ -36,12 +36,36 @@ func TestTokenizer(t *testing.T) {
 		"a,b,a":     {"a", "b", "a"},
 		`a,"b,c",d`: {"a", "d", `b,c`},
 		"a;b,c":     {"a", "b", "c"},
+		`a;b,c"`:    {"a", "b", "c"},
 	}
 
 	for str, exp := range set {
 		tokens := SplitKeywords(str)
 		if !Equal(exp, tokens) {
 			t.Errorf("tokens not equal:\ngot `%s`\nexpected `%s`", tokens, exp)
+		}
+	}
+}
+
+func TestFetchKeyword(t *testing.T) {
+	type check struct {
+		s, exp     string
+		start, end int
+	}
+
+	set := []check{
+		{"a,b,,c, d", "a,b,,c, d", 0, 100},
+		{"a,b,,c, d", "a", 0, 1},
+		{"a,b,,c, d", "a", 0, 2},
+		{"a,b,,c, d", "a,b", 0, 5},
+		{"a,b,,c, d", "", 3, 5},
+		{"a,b,,c, d", "", 3, 3},
+	}
+
+	for i, s := range set {
+		f := fetchKeyword(s.s, s.start, s.end)
+		if f != s.exp {
+			t.Errorf("keyword cut failed (line `%d`):\ngot `%s`\nexpected `%s`", i, f, s.exp)
 		}
 	}
 }
