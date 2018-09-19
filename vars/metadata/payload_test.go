@@ -9,12 +9,12 @@ func TestPayloadAddTag(t *testing.T) {
 
 	p.AddTag("tag1", "true")
 	if p.Tags()["tag1"] != true {
-		t.Errorf("`true` strings should be converted to bool type, got %b", p.Tags()["tag1"])
+		t.Errorf("`true` strings should be converted to bool type, got %t", p.Tags()["tag1"])
 	}
 
 	p.AddTag("tag2", "false")
 	if p.Tags()["tag2"] != false {
-		t.Errorf("`false` strings should be converted to bool type, got %b", p.Tags()["tag2"])
+		t.Errorf("`false` strings should be converted to bool type, got %t", p.Tags()["tag2"])
 	}
 
 	p.AddTag("tag3", "test")

@@ -73,7 +73,7 @@ func TestEqual(t *testing.T) {
 	for i, v := range set {
 		res := Equal(v.a, v.b)
 		if res != v.exp {
-			t.Errorf("equality failed for %d:\ngot `%b` \nexpected `%b`", i, res, v.exp)
+			t.Errorf("equality failed for %d:\ngot `%t` \nexpected `%t`", i, res, v.exp)
 		}
 	}
 }
