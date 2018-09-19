@@ -84,10 +84,11 @@ func poolWorker(job *writecmd.Job, append, originals bool) ([]byte, error) {
 		return []byte{}, writecmd.SkipFileErr
 	}
 
+	payload := job.Payload()
 	result, err := etool.Write(
 		filename,
-		job.Payload().Tags(),
-		job.Payload().UseSeparator(),
+		payload.Tags(),
+		payload.UseSeparator(),
 		originals,
 	)
 
