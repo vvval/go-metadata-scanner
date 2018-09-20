@@ -1,4 +1,4 @@
-package scancmd
+package etool
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 
 const sourceFileField string = "SourceFile"
 
-func parse(data []byte) []vars.File {
+func Parse(data []byte) []vars.File {
 	var files []vars.File
 	var schema []metadata.Tags
 

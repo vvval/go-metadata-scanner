@@ -46,7 +46,19 @@ func scanHandler(cmd *cobra.Command, args []string) {
 	var chunks = make(chan vars.Chunk)
 	var scannedFiles = make(chan vars.File)
 	var wg sync.WaitGroup
-	scancmd.CreatePool(&wg, poolSize, chunks, etool.Read, scannedFiles, config.App.Fields())
+	scancmd.CreatePool(
+		&wg,
+		poolSize,
+		chunks,
+		func(files vars.Chunk) ([]byte, error) {
+			return etool.Read(files, config.App.Fields())
+		},
+		func(data []byte) {
+			for _, parsed := range etool.Parse(data) {
+				scannedFiles <- parsed
+			}
+		},
+	)
 
 	for _, chunk := range files.Split(chunkSize) {
 		wg.Add(1)
@@ -64,14 +76,12 @@ func scanHandler(cmd *cobra.Command, args []string) {
 	headers := packHeaders(config.App.Fields())
 	wr, err := writers.Get(scanFlags.Format())
 	if err != nil {
-		log.Failure("Output writer", err.Error())
-		os.Exit(1)
+		logWriterFatal(err)
 	}
 
 	err = wr.Open(outputFilename, headers)
 	if err != nil {
-		log.Failure("Output writer", err.Error())
-		os.Exit(1)
+		logWriterFatal(err)
 	}
 	defer wr.Close()
 
@@ -103,4 +113,9 @@ func packHeaders(fields []string) []string {
 	}
 
 	return headers
+}
+
+func logWriterFatal(err error) {
+	log.Failure("Output writer", err.Error())
+	os.Exit(1)
 }
