@@ -58,7 +58,7 @@ func writeHandler(cmd *cobra.Command, args []string) {
 	file := util.MustOpenReadonlyFile(writeFlags.Filename())
 	defer file.Close()
 
-	operations.ReadCSV(file, writeFlags.Separator(), func(filename string, payload metadata.Payload) {
+	operations.ReadCSV(util.GetCSVReader(file, writeFlags.Separator()), config.Dict, func(filename string, payload metadata.Payload) {
 		wg.Add(1)
 		jobs <- writecmd.NewJob(filename, payload)
 	})

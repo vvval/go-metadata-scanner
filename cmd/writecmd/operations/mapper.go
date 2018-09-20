@@ -24,17 +24,17 @@ func mapPayload(columns map[int]vars.Tag, input []string) metadata.Payload {
 	payload := metadata.New()
 
 	for index, value := range input {
-		t, ok := columns[index]
+		columnTag, ok := columns[index]
 		if !ok {
 			// Unmapped key, skip
 			continue
 		}
 
-		for _, tag := range t.Map() {
-			if config.Dict.IsBoolean(t.Key(), tag) {
+		for _, tag := range columnTag.Map() {
+			if config.Dict.IsBoolean(columnTag.Key(), tag) {
 				payload.AddBool(tag, len(value) != 0)
 			} else if len(value) != 0 {
-				if config.Dict.IsList(t.Key(), tag) {
+				if config.Dict.IsList(columnTag.Key(), tag) {
 					payload.AddList(tag, util.SplitKeywords(value))
 				} else {
 					payload.AddTag(tag, value)
@@ -48,7 +48,7 @@ func mapPayload(columns map[int]vars.Tag, input []string) metadata.Payload {
 
 // Map columns to a known tag map
 // Skip 1st column (dedicated to a file names) and empty columns
-func readColumns(columns []string) map[int]vars.Tag {
+func readColumns(columns []string, dict config.DictConfig) map[int]vars.Tag {
 	output := map[int]vars.Tag{}
 	for i, column := range columns {
 		column = strings.Trim(column, " ")
@@ -57,7 +57,7 @@ func readColumns(columns []string) map[int]vars.Tag {
 			continue
 		}
 
-		tag, found := config.Dict.Find(column)
+		tag, found := dict.Find(column)
 		if !found {
 			// Skip not found columns
 			continue

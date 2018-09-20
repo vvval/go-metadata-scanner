@@ -9,7 +9,40 @@ import (
 )
 
 func testMapPayload(t *testing.T) {
+	dict := configuration.Load(config.DictConfig{}, "./../../../dict.yaml").(config.DictConfig)
+	columns := readColumns([]string{"", "keywords", "", "title", "test", "XMP:Marked"}, dict)
 
+	type check struct {
+		data []string
+		has  map[string]interface{}
+		miss []string
+	}
+
+	set := []check{
+		{
+			[]string{"name1", "keyword1,keyword2,keyword3", "empty1", "title1", "test1"},
+			map[string]interface{}{"IPTC:Keywords": "keyword1,keyword2,keyword3", "IPTC:Headline": "title1", "XMP:Marked": false},
+			[]string{"test", ""},
+		},
+		{
+			[]string{"name2", "keyword4", "empty2", "", "", "true"},
+			map[string]interface{}{"IPTC:Keywords": "keyword4", "XMP:Marked": true},
+			[]string{"IPTC:Headline"},
+		},
+	}
+
+	for i, s := range set {
+		payload := mapPayload(columns, s.data)
+		tags := payload.Tags()
+
+		for name, val := range s.has {
+			if v, ok := tags.Tag(name); !ok {
+				t.Errorf("payload mismatch (line `%d`):\n\nexp `%s` `%v`", i, name, val)
+			} else if v != val {
+				t.Errorf("payload mismatch (line `%d`) for `%s`:\ngot `%v`\nexp `%v`", i, name, v, val)
+			}
+		}
+	}
 }
 
 func TestReadColumns(t *testing.T) {
@@ -43,10 +76,10 @@ func TestReadColumns(t *testing.T) {
 		}},
 	}
 
-	dict := configuration.Load(config.Dict, "./../../../dict.yaml").(config.DictConfig)
+	dict := configuration.Load(config.DictConfig{}, "./../../../dict.yaml").(config.DictConfig)
 
 	for i, s := range set {
-		read := readColumns(s.cols)
+		read := readColumns(s.cols, dict)
 		for j, checkTag := range s.exp {
 			foundCheckTag, found := dict.Find(checkTag.name)
 			if found != checkTag.found {

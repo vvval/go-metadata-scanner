@@ -1,17 +1,16 @@
 package operations
 
 import (
+	"encoding/csv"
 	"fmt"
-	"github.com/vvval/go-metadata-scanner/util"
+	"github.com/vvval/go-metadata-scanner/config"
 	"github.com/vvval/go-metadata-scanner/util/log"
 	"github.com/vvval/go-metadata-scanner/vars"
 	"github.com/vvval/go-metadata-scanner/vars/metadata"
 	"io"
-	"os"
 )
 
-func ReadCSV(file *os.File, sep rune, callback func(filename string, payload metadata.Payload)) {
-	reader := util.GetCSVReader(file, sep)
+func ReadCSV(reader *csv.Reader, dict config.DictConfig, callback func(filename string, payload metadata.Payload)) {
 	var columnsFound bool
 	var columns map[int]vars.Tag
 
@@ -31,7 +30,7 @@ func ReadCSV(file *os.File, sep rune, callback func(filename string, payload met
 
 		if !columnsFound {
 			columnsFound = true
-			columns = readColumns(row)
+			columns = readColumns(row, dict)
 
 			logColumns(columns)
 			continue
