@@ -1,16 +1,22 @@
 package writecmd
 
 import (
+	"errors"
 	"github.com/vvval/go-metadata-scanner/etool"
 	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/util/scan"
 	"github.com/vvval/go-metadata-scanner/vars"
 )
 
+var (
+	skipFileErr = errors.New("skipFileErr")
+	noFileErr   = errors.New("noFileErr")
+)
+
 func Work(job *Job, append, originals bool, extensions []string, files *vars.Chunk, filesData *[]vars.File) ([]byte, error) {
 	filename, found := scan.Candidates(job.Filename(), files, extensions)
 	if !found {
-		return []byte{}, NoFileErr
+		return []byte{}, noFileErr
 	}
 
 	if append {
@@ -20,7 +26,7 @@ func Work(job *Job, append, originals bool, extensions []string, files *vars.Chu
 	}
 
 	if !job.HasPayload() {
-		return []byte{}, SkipFileErr
+		return []byte{}, skipFileErr
 	}
 
 	payload := job.Payload()
