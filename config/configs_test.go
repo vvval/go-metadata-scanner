@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/vvval/go-metadata-scanner/configuration"
 	"github.com/vvval/go-metadata-scanner/util"
 	"testing"
 )
@@ -63,6 +64,100 @@ func TestDictConfig(t *testing.T) {
 		m := s.a.MergeDefault(s.b).(DictConfig)
 		if !mapEqual(m.known, s.exp.known) || !util.Equal(m.booleans, s.exp.booleans) || !util.Equal(m.lists, s.exp.lists) {
 			t.Errorf("merge failed (line `%d`):\ngot `%v`\nexpected `%v`", i, m, s.exp)
+		}
+	}
+}
+
+func TestDictFind(t *testing.T) {
+	type check struct {
+		name  string
+		found bool
+	}
+
+	set := []check{
+		{"", false},
+		{"test", false},
+		{"keywords", true},
+		{"IPTC:keywords", true},
+		{"iptc:KEYWORDS", true},
+	}
+
+	dict := configuration.Load(Dict, "./../dict.yaml").(DictConfig)
+
+	for i, s := range set {
+		_, f := dict.Find(s.name)
+		if f != s.found {
+			t.Errorf("find failed (line `%d`):\ngot `%t`\nexpected `%t`", i, f, s.found)
+		}
+	}
+}
+
+func TestDictIsBoolean(t *testing.T) {
+	type check struct {
+		name, tag string
+		is        bool
+	}
+
+	set := []check{
+		{"", "", false},
+		{"test", "", false},
+		{"copyrighted", "test", false},
+		{"", "XMP:marked", true},
+	}
+
+	dict := configuration.Load(Dict, "./../dict.yaml").(DictConfig)
+
+	for i, s := range set {
+		f := dict.IsBoolean(s.name, s.tag)
+		if f != s.is {
+			t.Errorf("find in booleans failed (line `%d`) for `%+v`:\ngot `%t`\nexpected `%t`", i, s, f, s.is)
+		}
+	}
+}
+
+func TestDictIsList(t *testing.T) {
+	type check struct {
+		name, tag string
+		is        bool
+	}
+
+	set := []check{
+		{"", "", false},
+		{"test", "", false},
+		{"keywords", "test", true},
+		{"", "IPTC:Contact", true},
+	}
+
+	dict := configuration.Load(Dict, "./../dict.yaml").(DictConfig)
+
+	for i, s := range set {
+		f := dict.IsList(s.name, s.tag)
+		if f != s.is {
+			t.Errorf("find in lists failed (line `%d`) for `%+v`:\ngot `%t`\nexpected `%t`", i, s, f, s.is)
+		}
+	}
+}
+
+func TestDictTagEquals(t *testing.T) {
+	type check struct {
+		t1, t2 string
+		exp    bool
+	}
+
+	set := []check{
+		{"", "", true},
+		{"test", "", false},
+		{"", "test", false},
+		{"test", "test", true},
+		{"IPTC:Contact", "IPTC:Contact", true},
+		{"contact", "IPTC:Contact", true},
+		{"IPTC:Contact", "contact", true},
+	}
+
+	for i, s := range set {
+		f := tagEquals(s.t1, s.t2)
+		if f != s.exp {
+			t.Errorf("tags equality failed (line `%d`):\ngot `%t`\nexpected `%t`", i, f, s.exp)
 		}
 	}
 }
