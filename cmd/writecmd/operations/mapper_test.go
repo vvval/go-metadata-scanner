@@ -8,6 +8,7 @@ import (
 	"testing"
 )
 
+//broken test
 func testMapPayload(t *testing.T) {
 	dict := configuration.Load(config.DictConfig{}, "./../../../dict.yaml").(config.DictConfig)
 	columns := readColumns([]string{"", "keywords", "", "title", "test", "XMP:Marked"}, dict)

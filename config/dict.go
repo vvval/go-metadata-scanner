@@ -116,7 +116,7 @@ func oneOf(key, tag string, set []string) bool {
 // Tag argument is a tag name from the dict
 // Name argument is a searchable input+
 func tagEquals(tag, name string) bool {
-	return strings.EqualFold(tag, name) || strings.EqualFold(truncatePrefix(tag), truncatePrefix(name))
+	return strings.EqualFold(tag, name) || strings.EqualFold(tag, truncatePrefix(name))
 }
 
 // Cut "<group>:" prefix if found

@@ -151,7 +151,7 @@ func TestDictTagEquals(t *testing.T) {
 		{"test", "test", true},
 		{"IPTC:Contact", "IPTC:Contact", true},
 		{"contact", "IPTC:Contact", true},
-		{"IPTC:Contact", "contact", true},
+		{"IPTC:Contact", "contact", false},
 	}
 
 	for i, s := range set {
