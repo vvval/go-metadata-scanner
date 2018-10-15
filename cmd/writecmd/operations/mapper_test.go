@@ -1,44 +1,45 @@
 package operations
 
 import (
+	"fmt"
 	"github.com/vvval/go-metadata-scanner/config"
 	"github.com/vvval/go-metadata-scanner/configuration"
 	"github.com/vvval/go-metadata-scanner/vars"
+	"github.com/vvval/go-metadata-scanner/vars/metadata"
 	"reflect"
 	"testing"
 )
 
 //broken test
-func testMapPayload(t *testing.T) {
+func TestMapPayload(t *testing.T) {
 	dict := configuration.Load(config.DictConfig{}, "./../../../dict.yaml").(config.DictConfig)
-	columns := readColumns([]string{"", "keywords", "", "title", "test", "XMP:Marked"}, dict)
+	columns := readColumns(map[int]string{0: "", 1: "keywords", 2: "", 3: "title", 4: "test", 5: "XMP:Marked"}, dict)
 
 	type check struct {
-		data []string
+		data map[int]string
 		has  map[string]interface{}
 		miss []string
 	}
 
 	set := []check{
 		{
-			[]string{"name1", "keyword1,keyword2,keyword3", "empty1", "title1", "test1"},
-			map[string]interface{}{"IPTC:Keywords": "keyword1,keyword2,keyword3", "IPTC:Headline": "title1", "XMP:Marked": false},
+			map[int]string{0: "name1", 1: "keyword1,keyword2,keyword3", 2: "empty1", 3: "title1", 4: "test1"},
+			map[string]interface{}{"IPTC:Keywords": fmt.Sprintf("keyword1%skeyword2%skeyword3", metadata.Separator(), metadata.Separator()), "IPTC:Headline": "title1", "XMP:Marked": false},
 			[]string{"test", ""},
 		},
 		{
-			[]string{"name2", "keyword4", "empty2", "", "", "true"},
+			map[int]string{0: "name2", 1: "keyword4", 2: "empty2", 3: "", 4: "", 5: "true"},
 			map[string]interface{}{"IPTC:Keywords": "keyword4", "XMP:Marked": true},
 			[]string{"IPTC:Headline"},
 		},
 	}
 
 	for i, s := range set {
-		payload := mapPayload(columns, s.data)
+		payload := mapPayload(columns, s.data, dict)
 		tags := payload.Tags()
-
 		for name, val := range s.has {
 			if v, ok := tags.Tag(name); !ok {
-				t.Errorf("payload mismatch (line `%d`):\n\nexp `%s` `%v`", i, name, val)
+				t.Errorf("payload not found (line `%d`):\nexp `%s` `%v`", i, name, val)
 			} else if v != val {
 				t.Errorf("payload mismatch (line `%d`) for `%s`:\ngot `%v`\nexp `%v`", i, name, v, val)
 			}
@@ -53,25 +54,25 @@ func TestReadColumns(t *testing.T) {
 		found bool
 	}
 	type check struct {
-		cols []string
+		cols map[int]string
 		exp  []tag
 	}
 
 	set := []check{
-		{[]string{"abc", "Keywords"}, []tag{
+		{map[int]string{0: "abc", 1: "Keywords"}, []tag{
 			{1, "keywords", true},
 		}},
-		{[]string{"", "keywords "}, []tag{
+		{map[int]string{0: "", 1: "keywords "}, []tag{
 			{1, "IPTC:Keywords", true},
 		}},
-		{[]string{"", "XMP:Description"}, []tag{
+		{map[int]string{0: "", 1: "XMP:Description"}, []tag{
 			{1, "description", true},
 		}},
-		{[]string{"", "keywords", "", "description", "", ""}, []tag{
+		{map[int]string{0: "", 1: "keywords", 2: "", 3: "description", 4: "", 5: ""}, []tag{
 			{1, "keywords", true},
 			{3, "description", true},
 		}},
-		{[]string{"", "keywords", "test"}, []tag{
+		{map[int]string{0: "", 1: "keywords", 2: "test"}, []tag{
 			{1, "keywords", true},
 			{2, "test", false},
 		}},

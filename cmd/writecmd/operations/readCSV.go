@@ -17,8 +17,8 @@ func ReadCSV(reader *csv.Reader, dict config.DictConfig, callback func(filename 
 	var i int
 	for {
 		i++
-		row, err := reader.Read()
 
+		row, err := readIntoMap(reader)
 		if err == io.EOF {
 			break
 		}
@@ -40,12 +40,26 @@ func ReadCSV(reader *csv.Reader, dict config.DictConfig, callback func(filename 
 			continue
 		}
 
-		callback(row[0], mapPayload(columns, row))
+		callback(row[0], mapPayload(columns, row, dict))
 	}
 }
 
-func skipLine(line []string) bool {
-	return len(line) == 0 || len(line[0]) == 0
+func readIntoMap(reader *csv.Reader) (map[int]string, error) {
+	row, err := reader.Read()
+	if err == nil || err == io.EOF {
+		m := make(map[int]string, len(row))
+		for i, v := range row {
+			m[i] = v
+		}
+
+		return m, err
+	}
+
+	return nil, err
+}
+
+func skipLine(line map[int]string) bool {
+	return line == nil || len(line) == 0 || len(line[0]) == 0
 }
 
 func logColumns(columns map[int]vars.Tag) {

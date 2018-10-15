@@ -20,21 +20,20 @@ import (
 // 			"IPTC:description1":"some description",
 // 			"XMP:description2":"some description"
 // 		]
-func mapPayload(columns map[int]vars.Tag, input []string) metadata.Payload {
+func mapPayload(columns map[int]vars.Tag, input map[int]string, dict config.DictConfig) metadata.Payload {
 	payload := metadata.New()
 
-	for index, value := range input {
-		columnTag, ok := columns[index]
+	for index, columnTag := range columns {
+		value, ok := input[index]
 		if !ok {
-			// Unmapped key, skip
-			continue
+			value = ""
 		}
 
 		for _, tag := range columnTag.Map() {
-			if config.Dict.IsBoolean(columnTag.Key(), tag) {
+			if dict.IsBoolean(columnTag.Key(), tag) {
 				payload.AddBool(tag, len(value) != 0)
 			} else if len(value) != 0 {
-				if config.Dict.IsList(columnTag.Key(), tag) {
+				if dict.IsList(columnTag.Key(), tag) {
 					payload.AddList(tag, util.SplitKeywords(value))
 				} else {
 					payload.AddTag(tag, value)
@@ -48,7 +47,7 @@ func mapPayload(columns map[int]vars.Tag, input []string) metadata.Payload {
 
 // Map columns to a known tag map
 // Skip 1st column (dedicated to a file names) and empty columns
-func readColumns(columns []string, dict config.DictConfig) map[int]vars.Tag {
+func readColumns(columns map[int]string, dict config.DictConfig) map[int]vars.Tag {
 	output := map[int]vars.Tag{}
 	for i, column := range columns {
 		column = strings.Trim(column, " ")
