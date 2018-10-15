@@ -12,6 +12,7 @@ type Flags struct {
 	directory string
 	format    string
 	filename  string
+	verbose   bool
 }
 
 func (f Flags) Directory() string {
@@ -24,6 +25,10 @@ func (f Flags) Filename() string {
 
 func (f Flags) Format() string {
 	return f.format
+}
+
+func (f Flags) Verbosity() bool {
+	return f.verbose
 }
 
 func (f Flags) ext() string {
@@ -40,4 +45,5 @@ func (f *Flags) Fill(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&f.filename, "output", "o", "", "Output file (without extension)")
 	cmd.MarkFlagRequired("output")
 	cmd.Flags().StringVarP(&f.format, "format", "f", "csv", "Output file format")
+	cmd.Flags().BoolVarP(&f.verbose, "verbose", "v", false, "Verbosity")
 }

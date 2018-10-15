@@ -5,7 +5,23 @@ import (
 )
 
 var Visibility struct {
-	Command, Log, Failure, Debug bool
+	Command, Log, Failure, Debug, Done bool
+}
+
+func Failure(name string, args ...string) {
+	if !Visibility.Failure {
+		return
+	}
+
+	logError(name, args...)
+}
+
+func Done(name string, args ...string) {
+	if !Visibility.Done {
+		return
+	}
+
+	log(name, args...)
 }
 
 func Debug(name string, args ...string) {
@@ -30,14 +46,6 @@ func Command(name string, args ...string) {
 	}
 
 	log(name, args...)
-}
-
-func Failure(name string, args ...string) {
-	if !Visibility.Failure {
-		return
-	}
-
-	logError(name, args...)
 }
 
 func log(name string, args ...string) {

@@ -38,7 +38,13 @@ By default output file is a "csv" file.`,
 }
 
 func scanHandler(cmd *cobra.Command, args []string) {
-	log.Log("Scanning", util.Abs(scanFlags.Directory()))
+	if scanFlags.Verbosity() {
+		log.Visibility.Debug = true
+		log.Visibility.Log = true
+		log.Visibility.Command = true
+	}
+
+	log.Log("Scanning...", fmt.Sprintf("Directory is \"%s\"", util.Abs(scanFlags.Directory())))
 
 	var files = scan.MustDir(scanFlags.Directory(), config.App.Extensions())
 	poolSize, chunkSize := util.AdjustSizes(len(files), PoolSize, MinChunkSize)
@@ -93,7 +99,7 @@ func scanHandler(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	log.Log("Scanned", fmt.Sprintf("Scan results are in the \"%s\" file", outputFilename))
+	log.Done("Scanning completed", fmt.Sprintf("Output file is \"%s\" file", outputFilename))
 }
 
 func randomizeOutputFilename(path string) string {

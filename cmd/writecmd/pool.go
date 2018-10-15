@@ -35,9 +35,9 @@ func CreatePool(
 
 func logError(filename string, err error) {
 	if err == skipFileErr {
-		log.Debug("Skip", fmt.Sprintf("no payload found for `%s`", filename))
+		log.Debug("Skip file", fmt.Sprintf("no payload found for `%s`", filename))
 	} else if err == noFileErr {
-		log.Debug("Skip", fmt.Sprintf("no files candidate for `%s`", filename))
+		log.Debug("Skip file", fmt.Sprintf("no files candidate for `%s`", filename))
 	} else {
 		log.Failure("Write error", err.Error())
 	}

@@ -38,15 +38,21 @@ for proper mapping CSV data into appropriate metadata fields`,
 }
 
 func writeHandler(cmd *cobra.Command, args []string) {
+	if writeFlags.Verbosity() {
+		log.Visibility.Debug = true
+		log.Visibility.Log = true
+		log.Visibility.Command = true
+	}
+
 	files = scan.MustDir(writeFlags.Directory(), config.App.Extensions())
 
 	if writeFlags.Append() {
-		log.Log("Scan files", "\"Append\" flag is enabled")
+		log.Log("Scanning files...", "\"Append\" flag is enabled")
 
 		var poolSize, chunkSize = util.AdjustSizes(len(files), PoolSize, MinChunkSize)
 		filesData = operations.ScanFiles(files.Split(chunkSize), poolSize)
 
-		log.Log("Scanned", "\n")
+		log.Log("Scanning completed", "\n")
 	}
 
 	var wg sync.WaitGroup
@@ -66,5 +72,5 @@ func writeHandler(cmd *cobra.Command, args []string) {
 	wg.Wait()
 	close(jobs)
 
-	log.Log("Writing", "done")
+	log.Done("Writing completed", "")
 }

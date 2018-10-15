@@ -13,6 +13,7 @@ type Flags struct {
 	separator     string
 	append        bool
 	saveOriginals bool
+	verbose       bool
 }
 
 func (f Flags) Filename() string {
@@ -44,6 +45,10 @@ func (f Flags) Originals() bool {
 	return f.saveOriginals
 }
 
+func (f Flags) Verbosity() bool {
+	return f.verbose
+}
+
 func (f *Flags) Fill(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&f.filename, "filename", "f", "", "Metadata source file name")
 	cmd.MarkFlagRequired("filename")
@@ -51,4 +56,5 @@ func (f *Flags) Fill(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&f.directory, "directory", "d", "", "Directory with files to be processed")
 	cmd.Flags().BoolVarP(&f.append, "append", "a", false, "Append new data to existing values?")
 	cmd.Flags().BoolVarP(&f.saveOriginals, "originals", "o", false, "Save original files (overwrite with new data if not set)?")
+	cmd.Flags().BoolVarP(&f.verbose, "verbose", "v", false, "Verbosity")
 }

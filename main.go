@@ -8,10 +8,11 @@ import (
 )
 
 func init() {
-	log.Visibility.Command = true
-	log.Visibility.Log = true
 	log.Visibility.Failure = true
-	log.Visibility.Debug = true
+	log.Visibility.Done = true
+	log.Visibility.Debug = false   //v
+	log.Visibility.Log = false     //v
+	log.Visibility.Command = false //v
 
 	config.Dict = configuration.Load(config.Dict, "./dict.yaml").(config.DictConfig)
 	config.App = configuration.Load(config.App, "./app.yaml").(config.AppConfig)
