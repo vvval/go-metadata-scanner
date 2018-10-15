@@ -26,7 +26,7 @@ type MSCSVWriter struct {
 
 // Headers to be like: Filename, XMP, IPTC, etc...
 func (w *MSCSVWriter) Write(file *vars.File) error {
-	record, err := w.packMSCSVLine(file)
+	record, err := packMSCSVLine(file, w.dict, w.config)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func headers() []string {
 	}
 }
 
-func (w *MSCSVWriter) packMSCSVLine(f *vars.File) ([]string, error) {
+func packMSCSVLine(f *vars.File, dict config.DictConfig, config config.MSCSVConfig) ([]string, error) {
 	file, err := os.Open(f.Filename())
 	if err != nil {
 		return nil, err
@@ -91,16 +91,16 @@ func (w *MSCSVWriter) packMSCSVLine(f *vars.File) ([]string, error) {
 	}
 
 	record := []string{
-		w.config.Provider(),
+		config.Provider(),
 		f.RelPath(),
 		fmt.Sprintf("%d", stat.Size()),
 		mime.TypeByExtension(filepath.Ext(file.Name())),
-		description(f, w.dict),
+		description(f, dict),
 		util.Extension(f.Filename()),
 		fmt.Sprintf("%d", img.Width),
 		fmt.Sprintf("%d", img.Height),
-		keywords(f, w.dict),
-		title(f, w.dict),
+		keywords(f, dict),
+		title(f, dict),
 	}
 
 	return record, nil
@@ -121,7 +121,7 @@ func keywords(file *vars.File, dict config.DictConfig) string {
 		return slice2string(keywords)
 	}
 
-	return fmt.Sprintf("%s", keywords)
+	return fmt.Sprintf("%v", keywords)
 }
 
 func isSlice(i interface{}) bool {

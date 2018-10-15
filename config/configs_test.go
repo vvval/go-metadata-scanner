@@ -78,6 +78,9 @@ func TestDictFind(t *testing.T) {
 	set := []check{
 		{"", false},
 		{"test", false},
+		{"title", true},
+		{"IPTC:Headline", true},
+		{"iptc:Headline", true},
 		{"keywords", true},
 		{"IPTC:keywords", true},
 		{"iptc:KEYWORDS", true},
