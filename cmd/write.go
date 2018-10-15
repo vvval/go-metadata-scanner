@@ -30,14 +30,16 @@ Flags file should be a CSV file with comma-separated fields (or pass custom sepa
 First column should be reserved for file names, its name is omitted.
 Other columns should be named as keywords in a dict.yaml maps section provided
 for proper mapping CSV data into appropriate metadata fields`,
-		Run: writeHandler,
+		Run: func(cmd *cobra.Command, args []string) {
+			writeHandler()
+		},
 	}
 
 	rootCmd.AddCommand(cmd)
 	writeFlags.Fill(cmd)
 }
 
-func writeHandler(cmd *cobra.Command, args []string) {
+func writeHandler() {
 	if writeFlags.Verbosity() {
 		log.Visibility.Debug = true
 		log.Visibility.Log = true

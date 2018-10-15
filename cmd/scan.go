@@ -30,14 +30,16 @@ func init() {
 		Short: "Scan folder and write metadata into the output file.",
 		Long: `Scan folder and write metadata into the output file.
 By default output file is a "csv" file.`,
-		Run: scanHandler,
+		Run: func(cmd *cobra.Command, args []string) {
+			scanHandler()
+		},
 	}
 
 	rootCmd.AddCommand(cmd)
 	scanFlags.Fill(cmd)
 }
 
-func scanHandler(cmd *cobra.Command, args []string) {
+func scanHandler() {
 	if scanFlags.Verbosity() {
 		log.Visibility.Debug = true
 		log.Visibility.Log = true
@@ -112,7 +114,7 @@ func randomizeOutputFilename(path string) string {
 }
 
 func packHeaders(fields []string) []string {
-	headers := []string{"filename"}
+	headers := []string{"Filename"}
 
 	for _, field := range fields {
 		headers = append(headers, field)
