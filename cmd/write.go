@@ -31,7 +31,7 @@ First column should be reserved for file names, its name is omitted.
 Other columns should be named as keywords in a dict.yaml maps section provided
 for proper mapping CSV data into appropriate metadata fields`,
 		Run: func(cmd *cobra.Command, args []string) {
-			writeHandler()
+			writeHandler(writeFlags, config.App, config.Dict)
 		},
 	}
 
@@ -39,16 +39,16 @@ for proper mapping CSV data into appropriate metadata fields`,
 	writeFlags.Fill(cmd)
 }
 
-func writeHandler() {
-	if writeFlags.Verbosity() {
+func writeHandler(flags writecmd.Flags, appConfig config.AppConfig, dictConfig config.DictConfig) {
+	if flags.Verbosity() {
 		log.Visibility.Debug = true
 		log.Visibility.Log = true
 		log.Visibility.Command = true
 	}
 
-	files = scan.MustDir(writeFlags.Directory(), config.App.Extensions())
+	files = scan.MustDir(flags.Directory(), appConfig.Extensions())
 
-	if writeFlags.Append() {
+	if flags.Append() {
 		log.Log("Scanning files...", "\"Append\" flag is enabled")
 
 		var poolSize, chunkSize = util.AdjustSizes(len(files), PoolSize, MinChunkSize)
@@ -60,13 +60,13 @@ func writeHandler() {
 	var wg sync.WaitGroup
 	jobs := make(chan *writecmd.Job)
 	writecmd.CreatePool(&wg, poolSize, jobs, func(job *writecmd.Job) ([]byte, error) {
-		return writecmd.Work(job, writeFlags.Append(), writeFlags.Originals(), config.App.Extensions(), &files, &filesData)
+		return writecmd.Work(job, flags.Append(), flags.Originals(), appConfig.Extensions(), &files, &filesData)
 	})
 
-	file := util.MustOpenReadonlyFile(writeFlags.Filename())
+	file := util.MustOpenReadonlyFile(flags.Filename())
 	defer file.Close()
 
-	operations.ReadCSV(util.GetCSVReader(file, writeFlags.Separator()), config.Dict, func(filename string, payload metadata.Payload) {
+	operations.ReadCSV(util.GetCSVReader(file, flags.Separator()), dictConfig, func(filename string, payload metadata.Payload) {
 		wg.Add(1)
 		jobs <- writecmd.NewJob(filename, payload)
 	})

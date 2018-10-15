@@ -31,7 +31,7 @@ func init() {
 		Long: `Scan folder and write metadata into the output file.
 By default output file is a "csv" file.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			scanHandler()
+			scanHandler(scanFlags, config.App)
 		},
 	}
 
@@ -39,16 +39,16 @@ By default output file is a "csv" file.`,
 	scanFlags.Fill(cmd)
 }
 
-func scanHandler() {
-	if scanFlags.Verbosity() {
+func scanHandler(flags scancmd.Flags, appConfig config.AppConfig) {
+	if flags.Verbosity() {
 		log.Visibility.Debug = true
 		log.Visibility.Log = true
 		log.Visibility.Command = true
 	}
 
-	log.Log("Scanning...", fmt.Sprintf("Directory is \"%s\"", util.Abs(scanFlags.Directory())))
+	log.Log("Scanning...", fmt.Sprintf("Directory is \"%s\"", util.Abs(flags.Directory())))
 
-	var files = scan.MustDir(scanFlags.Directory(), config.App.Extensions())
+	var files = scan.MustDir(flags.Directory(), appConfig.Extensions())
 	poolSize, chunkSize := util.AdjustSizes(len(files), PoolSize, MinChunkSize)
 
 	var chunks = make(chan vars.Chunk)
@@ -59,7 +59,7 @@ func scanHandler() {
 		poolSize,
 		chunks,
 		func(files vars.Chunk) ([]byte, error) {
-			return etool.Read(files, config.App.Fields())
+			return etool.Read(files, appConfig.Fields())
 		},
 		func(data []byte) {
 			for _, parsed := range etool.Parse(data) {
@@ -79,10 +79,10 @@ func scanHandler() {
 		close(scannedFiles)
 	}()
 
-	outputFilename := randomizeOutputFilename(scanFlags.Filename())
+	outputFilename := randomizeOutputFilename(flags.Filename())
 
-	headers := packHeaders(config.App.Fields())
-	wr, err := writers.Get(scanFlags.Format())
+	headers := packHeaders(appConfig.Fields())
+	wr, err := writers.Get(flags.Format())
 	if err != nil {
 		logWriterFatal(err)
 	}
@@ -94,7 +94,7 @@ func scanHandler() {
 	defer wr.Close()
 
 	for file := range scannedFiles {
-		file.WithRelPath(scanFlags.Directory())
+		file.WithRelPath(flags.Directory())
 		err := wr.Write(&file)
 		if err != nil {
 			log.Failure("CSV write", fmt.Sprintf("failed writing data for \"%s\" file", file.RelPath()))
