@@ -1,7 +1,6 @@
 package log
 
 import (
-	"github.com/spiral/roadrunner/cmd/rr/utils"
 	"strings"
 )
 
@@ -42,9 +41,9 @@ func Failure(name string, args ...string) {
 }
 
 func log(name string, args ...string) {
-	utils.Printf("<cyan+hb>►</reset> <yellow+hb>%s</reset> <green+hb>%s</reset>\n", name, strings.Join(args, " "))
+	printf("<cyan+hb>►</reset> <yellow+hb>%s</reset> <green+hb>%s</reset>\n", name, strings.Join(args, " "))
 }
 
 func logError(name string, args ...string) {
-	utils.Printf("<red+hb>%s: %s</reset>\n", name, strings.Join(args, " "))
+	printf("<red+hb>%s: %s</reset>\n", name, strings.Join(args, " "))
 }

@@ -11,7 +11,6 @@ before_install:
 install:
 - go get "github.com/vvval/go-metadata-scanner"
 - go get -u "github.com/spf13/cobra"
-- go get -u "github.com/spiral/roadrunner/cmd/rr/utils"
 
 script:
 - go test ./cmd/scamcmd/writers -race -v -coverprofile=scancmdWriters.txt -covermode=atomic
