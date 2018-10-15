@@ -13,6 +13,7 @@ install:
 - go get -u "github.com/spf13/cobra"
 
 script:
+- go test ./cmd -race -v -coverprofile=cmd.txt -covermode=atomic
 - go test ./cmd/scancmd/writers -race -v -coverprofile=scancmdWriters.txt -covermode=atomic
 - go test ./cmd/writecmd/operations -race -v -coverprofile=writecmdOperations.txt -covermode=atomic
 - go test ./config -race -v -coverprofile=config.txt -covermode=atomic
@@ -25,6 +26,7 @@ script:
 - go test ./vars/metadata -race -v -coverprofile=varsMetadata.txt -covermode=atomic
 
 after_success:
+- bash <(curl -s https://codecov.io/bash) -f cmd.txt
 - bash <(curl -s https://codecov.io/bash) -f scancmdWriters.txt
 - bash <(curl -s https://codecov.io/bash) -f writecmdOperations.txt
 - bash <(curl -s https://codecov.io/bash) -f config.txt
