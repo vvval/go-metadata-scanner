@@ -18,51 +18,20 @@ import (
 )
 
 type MSCSVWriter struct {
-	dict config.DictConfig
+	dict   config.DictConfig
+	config config.MSCSVConfig
 	BaseWriter
 	csv *csv.Writer
 }
 
 // Headers to be like: Filename, XMP, IPTC, etc...
 func (w *MSCSVWriter) Write(file *vars.File) error {
-	record, err := w.packImage(file)
+	record, err := w.packMSCSVLine(file)
 	if err != nil {
 		return err
 	}
 
 	return w.csv.Write(record)
-}
-
-func (w *MSCSVWriter) packImage(f *vars.File) ([]string, error) {
-	file, err := os.Open(f.Filename())
-	if err != nil {
-		return nil, err
-	}
-
-	stat, err := file.Stat()
-	if err != nil {
-		return nil, err
-	}
-
-	img, _, err := image.DecodeConfig(file)
-	if err != nil {
-		return nil, err
-	}
-
-	record := []string{
-		config.MSCSV.Provider(),
-		f.RelPath(),
-		fmt.Sprintf("%d", stat.Size()),
-		mime.TypeByExtension(filepath.Ext(file.Name())),
-		w.description(f),
-		util.Extension(f.Filename()),
-		fmt.Sprintf("%d", img.Width),
-		fmt.Sprintf("%d", img.Height),
-		w.keywords(f),
-		w.title(f),
-	}
-
-	return record, nil
 }
 
 func (w *MSCSVWriter) Open(filename string, h []string) error {
@@ -90,49 +59,9 @@ func (w *MSCSVWriter) Close() error {
 	return nil
 }
 
-func (w *MSCSVWriter) description(file *vars.File) string {
-	return w.findTagValue(file, "description").(string)
-}
-
-func (w *MSCSVWriter) keywords(file *vars.File) string {
-	keywords := w.findTagValue(file, "keywords")
-
-	if str, ok := keywords.(string); ok {
-		return str
-	}
-
-	value := reflect.ValueOf(keywords)
-	output := make([]string, value.Len())
-
-	if value.Kind() == reflect.Slice {
-		for i := 0; i < value.Len(); i++ {
-			output[i] = fmt.Sprintf("%s", value.Index(i))
-		}
-		return strings.Join(output, ", ")
-	}
-
-	return fmt.Sprintf("%s", keywords)
-}
-
-func (w *MSCSVWriter) title(file *vars.File) string {
-	return w.findTagValue(file, "title").(string)
-}
-
-func (w *MSCSVWriter) findTagValue(file *vars.File, field string) interface{} {
-	if tag, found := w.dict.Find(field); found {
-		for _, name := range tag.Map() {
-			if value, ok := file.Tags().Tag(name); ok && value != nil && value != "" {
-				return value
-			}
-		}
-	}
-
-	return ""
-}
-
 func headers() []string {
 	return []string{
-		"Provider",       //ELearningBrothers
+		"Provider",       //eLearningBrothers
 		"MediaId",        //File name, should be unique per provider
 		"ContentSize",    //Size in bytes
 		"ContentType",    //Mime type like image/ext
@@ -143,4 +72,87 @@ func headers() []string {
 		"Keywords",       //Keywords
 		"Name",           //Display name  or Title
 	}
+}
+
+func (w *MSCSVWriter) packMSCSVLine(f *vars.File) ([]string, error) {
+	file, err := os.Open(f.Filename())
+	if err != nil {
+		return nil, err
+	}
+
+	stat, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	img, _, err := image.DecodeConfig(file)
+	if err != nil {
+		return nil, err
+	}
+
+	record := []string{
+		w.config.Provider(),
+		f.RelPath(),
+		fmt.Sprintf("%d", stat.Size()),
+		mime.TypeByExtension(filepath.Ext(file.Name())),
+		description(f, w.dict),
+		util.Extension(f.Filename()),
+		fmt.Sprintf("%d", img.Width),
+		fmt.Sprintf("%d", img.Height),
+		keywords(f, w.dict),
+		title(f, w.dict),
+	}
+
+	return record, nil
+}
+
+func description(file *vars.File, dict config.DictConfig) string {
+	return findTagValue(file, "description", dict).(string)
+}
+
+func keywords(file *vars.File, dict config.DictConfig) string {
+	keywords := findTagValue(file, "keywords", dict)
+
+	if str, ok := keywords.(string); ok {
+		return str
+	}
+
+	if isSlice(keywords) {
+		return slice2string(keywords)
+	}
+
+	return fmt.Sprintf("%s", keywords)
+}
+
+func isSlice(i interface{}) bool {
+	value := reflect.ValueOf(i)
+
+	return value.Kind() == reflect.Slice
+}
+
+func slice2string(i interface{}) string {
+	v := reflect.ValueOf(i)
+	output := make([]string, v.Len())
+
+	for i := 0; i < v.Len(); i++ {
+		output[i] = fmt.Sprintf("%s", v.Index(i))
+	}
+
+	return strings.Join(output, ", ")
+}
+
+func title(file *vars.File, dict config.DictConfig) string {
+	return findTagValue(file, "title", dict).(string)
+}
+
+func findTagValue(file *vars.File, field string, dict config.DictConfig) interface{} {
+	if tag, found := dict.Find(field); found {
+		for _, name := range tag.Map() {
+			if value, ok := file.Tags().Tag(name); ok && value != nil && value != "" {
+				return value
+			}
+		}
+	}
+
+	return ""
 }

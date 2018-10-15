@@ -74,7 +74,7 @@ func scanHandler(cmd *cobra.Command, args []string) {
 	outputFilename := randomizeOutputFilename(scanFlags.Filename())
 
 	headers := packHeaders(config.App.Fields())
-	wr, err := writers.Get(scanFlags.Format(), config.Dict)
+	wr, err := writers.Get(scanFlags.Format())
 	if err != nil {
 		logWriterFatal(err)
 	}
