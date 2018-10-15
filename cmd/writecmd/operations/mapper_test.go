@@ -18,19 +18,16 @@ func TestMapPayload(t *testing.T) {
 	type check struct {
 		data map[int]string
 		has  map[string]interface{}
-		miss []string
 	}
 
 	set := []check{
 		{
 			map[int]string{0: "name1", 1: "keyword1,keyword2,keyword3", 2: "empty1", 3: "title1", 4: "test1"},
 			map[string]interface{}{"IPTC:Keywords": fmt.Sprintf("keyword1%skeyword2%skeyword3", metadata.Separator(), metadata.Separator()), "IPTC:Headline": "title1", "XMP:Marked": false},
-			[]string{"test", ""},
 		},
 		{
 			map[int]string{0: "name2", 1: "keyword4", 2: "empty2", 3: "", 4: "", 5: "true"},
 			map[string]interface{}{"IPTC:Keywords": "keyword4", "XMP:Marked": true},
-			[]string{"IPTC:Headline"},
 		},
 	}
 

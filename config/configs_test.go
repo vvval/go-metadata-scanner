@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/vvval/go-metadata-scanner/configuration"
 	"github.com/vvval/go-metadata-scanner/util"
+	"github.com/vvval/go-metadata-scanner/vars"
 	"testing"
 )
 
@@ -94,25 +95,41 @@ func TestDictFind(t *testing.T) {
 
 func TestDictIsBoolean(t *testing.T) {
 	type check struct {
-		name, tag string
-		is        bool
+		name string
+		is   bool
 	}
 
 	set := []check{
-		{"", "", false},
-		{"test", "", false},
-		{"copyrighted", "test", false},
-		{"", "XMP:marked", true},
+		{"", false},
+		{"test", false},
+		{"copyrighted", true},
+		{"XMP:marked", true},
 	}
 
 	dict := configuration.Load(Dict, "./../dict.yaml").(DictConfig)
 
 	for i, s := range set {
-		f := dict.IsBoolean(s.name, s.tag)
-		if f != s.is {
-			t.Errorf("find in booleans failed (line `%d`) for `%+v`:\ngot `%t`\nexpected `%t`", i, s, f, s.is)
+		tag, ok := dict.Find(s.name)
+		if !ok && s.is {
+			t.Errorf("find in booleans failed (line `%d`) for `%+v` (unknown tag)", i, s)
+		}
+
+		found := isFound(tag, dict)
+
+		if found != s.is {
+			t.Errorf("find in booleans failed (line `%d`) for `%+v`:\ngot `%t`\nexpected `%t`", i, s, found, s.is)
 		}
 	}
+}
+
+func isFound(tag vars.Tag, dict DictConfig) bool {
+	for _, mapTag := range tag.Map() {
+		if dict.IsBoolean(tag.Key(), mapTag) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func TestDictIsList(t *testing.T) {
@@ -125,7 +142,8 @@ func TestDictIsList(t *testing.T) {
 		{"", "", false},
 		{"test", "", false},
 		{"keywords", "test", true},
-		{"", "IPTC:Contact", true},
+		{"", "IPTC:Writer-Editor", true},
+		{"", "captionWriter", false},
 	}
 
 	dict := configuration.Load(Dict, "./../dict.yaml").(DictConfig)

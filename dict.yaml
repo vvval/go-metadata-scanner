@@ -34,7 +34,7 @@ known:
 
 #known bool-value tags
 #all tags should be either a known tag keys or written in standard format <GROUP:TagName>
-booleans: ["XMP:Marked"]
+booleans: ["copyrighted"]
 
 #known list-value tags
 #all tags should be either a known tag keys or written in standard format <GROUP:TagName>
