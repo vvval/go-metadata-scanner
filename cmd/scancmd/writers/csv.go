@@ -14,17 +14,7 @@ type CSVWriter struct {
 
 // Headers to be like: Filename, XMP, IPTC, etc...
 func (w *CSVWriter) Write(file *vars.File) error {
-	record := []string{file.RelPath()}
-	for group, data := range packStrings(file, w.headers) {
-		for i := 1; i < len(w.headers); i++ {
-			header := w.headers[i]
-			if strings.EqualFold(header, group) {
-				record = append(record, data)
-			}
-		}
-	}
-
-	return w.csv.Write(record)
+	return w.csv.Write(packCSVLine(file, w.headers))
 }
 
 func (w *CSVWriter) Open(filename string, headers []string) error {
@@ -50,6 +40,20 @@ func (w *CSVWriter) Close() error {
 	closeFile(w.file)
 
 	return nil
+}
+
+func packCSVLine(file *vars.File, headers []string) []string {
+	record := []string{file.RelPath()}
+	for group, data := range packStrings(file, headers) {
+		for i := 1; i < len(headers); i++ {
+			header := headers[i]
+			if strings.EqualFold(header, group) {
+				record = append(record, data)
+			}
+		}
+	}
+
+	return record
 }
 
 func packStrings(file *vars.File, headers []string) map[string]string {
