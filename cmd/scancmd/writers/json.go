@@ -12,11 +12,7 @@ type JSONWriter struct {
 
 // Headers to be like: Filename, XMP, IPTC, etc...
 func (w *JSONWriter) Write(file *vars.File) error {
-	record := map[string]interface{}{}
-	for k, v := range tagsByGroups(file, w.headers) {
-		record[k] = v
-	}
-	w.buf[file.RelPath()] = record
+	w.buf[file.RelPath()] = packJSONLine(file, w.headers)
 
 	return nil
 }
@@ -45,4 +41,13 @@ func (w *JSONWriter) Close() error {
 	closeFile(w.file)
 
 	return nil
+}
+
+func packJSONLine(file *vars.File, headers []string) map[string]interface{} {
+	record := map[string]interface{}{}
+	for k, v := range tagsByGroups(file, headers) {
+		record[k] = v
+	}
+
+	return record
 }
