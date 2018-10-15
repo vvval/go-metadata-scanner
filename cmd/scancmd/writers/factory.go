@@ -1,14 +1,17 @@
 package writers
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/vvval/go-metadata-scanner/config"
+)
 
-func Get(ext string) (Writer, error) {
+func Get(ext string, dict config.DictConfig) (Writer, error) {
 	switch ext {
 	case "csv":
 		return &CSVWriter{}, nil
 
 	case "mscsv":
-		return &MSCSVWriter{}, nil
+		return &MSCSVWriter{dict: dict}, nil
 
 	case "json":
 		return &JSONWriter{}, nil

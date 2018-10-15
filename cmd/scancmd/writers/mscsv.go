@@ -18,13 +18,14 @@ import (
 )
 
 type MSCSVWriter struct {
+	dict config.DictConfig
 	BaseWriter
 	csv *csv.Writer
 }
 
 // Headers to be like: Filename, XMP, IPTC, etc...
 func (w *MSCSVWriter) Write(file *vars.File) error {
-	record, err := packImage(file)
+	record, err := w.packImage(file)
 	if err != nil {
 		return err
 	}
@@ -32,7 +33,7 @@ func (w *MSCSVWriter) Write(file *vars.File) error {
 	return w.csv.Write(record)
 }
 
-func packImage(f *vars.File) ([]string, error) {
+func (w *MSCSVWriter) packImage(f *vars.File) ([]string, error) {
 	file, err := os.Open(f.Filename())
 	if err != nil {
 		return nil, err
@@ -53,12 +54,12 @@ func packImage(f *vars.File) ([]string, error) {
 		f.RelPath(),
 		fmt.Sprintf("%d", stat.Size()),
 		mime.TypeByExtension(filepath.Ext(file.Name())),
-		description(f),
+		w.description(f),
 		util.Extension(f.Filename()),
 		fmt.Sprintf("%d", img.Width),
 		fmt.Sprintf("%d", img.Height),
-		keywords(f),
-		title(f),
+		w.keywords(f),
+		w.title(f),
 	}
 
 	return record, nil
@@ -89,12 +90,12 @@ func (w *MSCSVWriter) Close() error {
 	return nil
 }
 
-func description(file *vars.File) string {
-	return findTagValue(file, "description").(string)
+func (w *MSCSVWriter) description(file *vars.File) string {
+	return w.findTagValue(file, "description").(string)
 }
 
-func keywords(file *vars.File) string {
-	keywords := findTagValue(file, "keywords")
+func (w *MSCSVWriter) keywords(file *vars.File) string {
+	keywords := w.findTagValue(file, "keywords")
 
 	if str, ok := keywords.(string); ok {
 		return str
@@ -113,12 +114,12 @@ func keywords(file *vars.File) string {
 	return fmt.Sprintf("%s", keywords)
 }
 
-func title(file *vars.File) string {
-	return findTagValue(file, "title").(string)
+func (w *MSCSVWriter) title(file *vars.File) string {
+	return w.findTagValue(file, "title").(string)
 }
 
-func findTagValue(file *vars.File, field string) interface{} {
-	if tag, found := config.Dict.Find(field); found {
+func (w *MSCSVWriter) findTagValue(file *vars.File, field string) interface{} {
+	if tag, found := w.dict.Find(field); found {
 		for _, name := range tag.Map() {
 			if value, ok := file.Tags().Tag(name); ok && value != nil && value != "" {
 				return value
