@@ -3,6 +3,7 @@ package rand
 import (
 	"regexp"
 	"testing"
+	"time"
 )
 
 func TestRand(t *testing.T) {
@@ -17,6 +18,7 @@ func TestRand(t *testing.T) {
 	}
 
 	str1 := Strings(10)
+	time.Sleep(time.Microsecond)
 	str2 := Strings(10)
 
 	if str1 == str2 {
