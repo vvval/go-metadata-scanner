@@ -5,6 +5,11 @@ sudo: required
 go:
 - "1.10.x"
 
+os:
+- windows
+- linux
+- osx
+
 before_install:
 - go version
 
