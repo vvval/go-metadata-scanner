@@ -31,7 +31,7 @@ First column should be reserved for file names, its name is omitted.
 Other columns should be named as keywords in a dict.yaml maps section provided
 for proper mapping CSV data into appropriate metadata fields`,
 		Run: func(cmd *cobra.Command, args []string) {
-			writeHandler(writeFlags, config.App, config.Dict)
+			writeHandler(writeFlags, config.App, config.Dict, poolSize)
 		},
 	}
 
@@ -39,7 +39,7 @@ for proper mapping CSV data into appropriate metadata fields`,
 	writeFlags.Fill(cmd)
 }
 
-func writeHandler(flags writecmd.Flags, appConfig config.AppConfig, dictConfig config.DictConfig) {
+func writeHandler(flags writecmd.Flags, appConfig config.AppConfig, dictConfig config.DictConfig, poolSize int) {
 	if flags.Verbosity() {
 		log.Visibility.Debug = true
 		log.Visibility.Log = true

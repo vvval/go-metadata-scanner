@@ -31,7 +31,11 @@ func init() {
 		Long: `Scan folder and write metadata into the output file.
 By default output file is a "csv" file.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			scanHandler(scanFlags, config.App)
+			err := scanHandler(scanFlags, config.App, PoolSize, MinChunkSize)
+			if err != nil {
+				log.Failure("Output writer", err.Error())
+				os.Exit(1)
+			}
 		},
 	}
 
@@ -39,7 +43,7 @@ By default output file is a "csv" file.`,
 	scanFlags.Fill(cmd)
 }
 
-func scanHandler(flags scancmd.Flags, appConfig config.AppConfig) {
+func scanHandler(flags scancmd.Flags, appConfig config.AppConfig, initialPoolSize, minChunkSize int) error {
 	if flags.Verbosity() {
 		log.Visibility.Debug = true
 		log.Visibility.Log = true
@@ -49,7 +53,7 @@ func scanHandler(flags scancmd.Flags, appConfig config.AppConfig) {
 	log.Log("Scanning...", fmt.Sprintf("Directory is \"%s\"", util.Abs(flags.Directory())))
 
 	var files = scan.MustDir(flags.Directory(), appConfig.Extensions())
-	poolSize, chunkSize := util.AdjustSizes(len(files), PoolSize, MinChunkSize)
+	poolSize, chunkSize := util.AdjustSizes(len(files), initialPoolSize, minChunkSize)
 
 	var chunks = make(chan vars.Chunk)
 	var scannedFiles = make(chan vars.File)
@@ -84,12 +88,12 @@ func scanHandler(flags scancmd.Flags, appConfig config.AppConfig) {
 	headers := packHeaders(appConfig.Fields())
 	wr, err := writers.Get(flags.Format())
 	if err != nil {
-		logWriterFatal(err)
+		return err
 	}
 
 	err = wr.Open(outputFilename, headers)
 	if err != nil {
-		logWriterFatal(err)
+		return err
 	}
 	defer wr.Close()
 
@@ -102,6 +106,8 @@ func scanHandler(flags scancmd.Flags, appConfig config.AppConfig) {
 	}
 
 	log.Done("Scanning completed", fmt.Sprintf("Output file is \"%s\" file", outputFilename))
+
+	return nil
 }
 
 func randomizeOutputFilename(path string) string {
@@ -121,9 +127,4 @@ func packHeaders(fields []string) []string {
 	}
 
 	return headers
-}
-
-func logWriterFatal(err error) {
-	log.Failure("Output writer", err.Error())
-	os.Exit(1)
 }
