@@ -19,6 +19,7 @@ build(){
 	cp app.yaml builds/$bdir
 	cp dict.yaml builds/$bdir
 	cp mscsv.yaml builds/$bdir
+	cp exiftool builds/$bdir
 	cp LICENSE builds/$bdir
 	cp README.md builds/$bdir
 }

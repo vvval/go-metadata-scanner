@@ -1,7 +1,8 @@
 #path to executable file (do not specify "./" in the beginning of the filename if executable file in same directory)
 exiftool: "exiftool"
 
+#supported file extensions
 extensions: ["jpg","jpeg","png","bmp"]
 
-#fields to be fetched from image files
+#fields to be fetched from image files and used for preparing a CSV output file for "scan" command
 fields: ["exif","iptc","xmp","icc_profile"]
