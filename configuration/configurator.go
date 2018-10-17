@@ -5,6 +5,7 @@ import (
 	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/util/log"
 	"io/ioutil"
+	"reflect"
 )
 
 func Load(conf Config, filename string) Config {
@@ -18,6 +19,8 @@ func Load(conf Config, filename string) Config {
 				return loadedConf.MergeDefault(conf)
 			}
 		}
+	} else {
+		log.Failure("Config load failed, file not exists", getType(conf))
 	}
 
 	if err != nil {
@@ -25,4 +28,12 @@ func Load(conf Config, filename string) Config {
 	}
 
 	return conf
+}
+
+func getType(v interface{}) string {
+	if t := reflect.TypeOf(v); t.Kind() == reflect.Ptr {
+		return "*" + t.Elem().Name()
+	} else {
+		return t.Name()
+	}
 }

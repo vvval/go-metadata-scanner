@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/vvval/go-metadata-scanner/cmd"
 	"github.com/vvval/go-metadata-scanner/config"
 	"github.com/vvval/go-metadata-scanner/configuration"
+	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/util/log"
+	"os"
 )
 
 func init() {
@@ -14,9 +17,15 @@ func init() {
 	log.Visibility.Log = false     //v
 	log.Visibility.Command = false //v
 
-	config.Dict = configuration.Load(config.Dict, "./dict.yaml").(config.DictConfig)
-	config.App = configuration.Load(config.App, "./app.yaml").(config.AppConfig)
-	config.MSCSV = configuration.Load(config.MSCSV, "./mscsv.yaml").(config.MSCSVConfig)
+	dir, err := util.RootDir()
+	if err != nil {
+		log.Failure("System error", fmt.Sprintf("Can't detect app directory: %s", err.Error()))
+		os.Exit(1)
+	}
+
+	config.Dict = configuration.Load(config.Dict, dir+"/dict.yaml").(config.DictConfig)
+	config.App = configuration.Load(config.App, dir+"/app.yaml").(config.AppConfig)
+	config.MSCSV = configuration.Load(config.MSCSV, dir+"/mscsv.yaml").(config.MSCSVConfig)
 }
 
 func main() {

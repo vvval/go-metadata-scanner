@@ -8,6 +8,15 @@ import (
 	"strings"
 )
 
+func RootDir() (string, error) {
+	path, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Dir(path), nil
+}
+
 func MustOpenReadonlyFile(filename string) *os.File {
 	file, err := os.OpenFile(filename, os.O_RDONLY, os.ModePerm)
 	if err != nil {

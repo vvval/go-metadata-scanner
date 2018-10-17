@@ -66,6 +66,7 @@ func writeHandler(flags writecmd.Flags, appConfig config.AppConfig, dictConfig c
 	file := util.MustOpenReadonlyFile(flags.Filename())
 	defer file.Close()
 
+	//Fill "jobs" chan
 	operations.ReadCSV(util.GetCSVReader(file, flags.Separator()), dictConfig, func(filename string, payload metadata.Payload) {
 		wg.Add(1)
 		jobs <- writecmd.NewJob(filename, payload)

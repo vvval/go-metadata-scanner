@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"github.com/vvval/go-metadata-scanner/util/log"
 	"github.com/vvval/go-metadata-scanner/vars"
 	"path/filepath"
 	"regexp"
@@ -32,6 +33,12 @@ func Candidates(filename string, files *vars.Chunk, extensions []string) (string
 
 	if len(values) == 1 {
 		return values[0], true
+	}
+
+	if len(values) == 0 {
+		log.Debug("No candidates for " + filename)
+	} else {
+		log.Debug("Too many candidates for "+filename, values...)
 	}
 
 	return "", false

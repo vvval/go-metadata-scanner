@@ -1,7 +1,6 @@
 package writecmd
 
 import (
-	"fmt"
 	"github.com/vvval/go-metadata-scanner/util/log"
 	"sync"
 )
@@ -24,21 +23,11 @@ func CreatePool(
 
 					_, err := poolWorkerFunc(job)
 					if err != nil {
-						logError(job.Filename(), err)
+						log.Failure("Write error", err.Error())
 					}
 					wg.Done()
 				}
 			}
 		}(jobs)
-	}
-}
-
-func logError(filename string, err error) {
-	if err == skipFileErr {
-		log.Debug("Skip file", fmt.Sprintf("no payload found for `%s`", filename))
-	} else if err == noFileErr {
-		log.Debug("Skip file", fmt.Sprintf("no files candidate for `%s`", filename))
-	} else {
-		log.Failure("Write error", err.Error())
 	}
 }

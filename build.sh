@@ -6,9 +6,10 @@ _VERSION=1.0.0
 
 build(){
 	echo Packaging $1 Build
-	bdir=scanner-${_VERSION}-$(date +%y%m%d-%H%M)
+	bdir=scanner-${_VERSION}-$(date +%y%m%d)
 
 	if [ "$4" == "0" ]; then
+	    echo "build dir is "$bdir
 	    rm -rf builds/$bdir && mkdir -p builds/$bdir
 	fi
 
@@ -32,9 +33,9 @@ build(){
 
 if [ "$1" == "all" ]; then
 	rm -rf builds/
-	build "Windows" "windows" "amd64" 0
-	build "Mac" "darwin" "amd64" 1
-	build "Linux" "linux" "amd64" 2
+	build "windows" "windows" "amd64" 0
+	build "mac" "darwin" "amd64" 1
+	build "linux" "linux" "amd64" 2
 	exit
 fi
 

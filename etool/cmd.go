@@ -13,9 +13,14 @@ import (
 const executable = "exiftool"
 
 func run(path string, args ...string) ([]byte, error) {
-	cmd := command(path)
+	root, err := util.RootDir()
+	if err != nil {
+		return []byte{}, err
+	}
+
+	cmd := command(root, path)
 	if !util.FileExists(cmd) {
-		return []byte{}, errors.New("command not found")
+		return []byte{}, errors.New("command not found " + cmd)
 	}
 
 	command := exec.Command(cmd, args...)
@@ -32,10 +37,10 @@ func run(path string, args ...string) ([]byte, error) {
 	return res, nil
 }
 
-func command(path string) string {
+func command(root, path string) string {
 	if runtime.GOOS == "windows" {
-		return filepath.Join(path, executable+".exe")
+		return filepath.Join(root, path, executable+".exe")
 	}
 
-	return filepath.Join(path, executable)
+	return filepath.Join(root, path, executable)
 }
