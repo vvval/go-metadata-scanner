@@ -43,7 +43,6 @@ func visit(path string, f os.FileInfo, _ error) error {
 	}
 
 	if !f.IsDir() {
-		path = strings.ToLower(path)
 		files[path] = util.Extension(path)
 	}
 

@@ -5,13 +5,13 @@ import (
 	"github.com/vvval/go-metadata-scanner/vars"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
 func Candidates(filename string, files *vars.Chunk, extensions []string) (string, bool) {
 	endings := extEndings(filename, extensions)
 	var candidates = make(map[string]bool)
-	var reg = &regexp.Regexp{}
 
 	for _, file := range *files {
 		for _, ending := range endings {
@@ -19,8 +19,7 @@ func Candidates(filename string, files *vars.Chunk, extensions []string) (string
 				return file, true
 			}
 
-			reg = regexp.MustCompile("^(([a-zA-Z]{1,}_)?0*)?" + regexp.QuoteMeta(filepath.Base(ending)) + "$")
-			if reg.MatchString(filepath.Base(file)) {
+			if filesMatch(filepath.Base(ending), filepath.Base(file)) {
 				candidates[file] = true
 			}
 		}
@@ -42,6 +41,18 @@ func Candidates(filename string, files *vars.Chunk, extensions []string) (string
 	}
 
 	return "", false
+}
+
+func filesMatch(ending, file string) bool {
+	if runtime.GOOS == "windows" {
+		ending = strings.ToLower(ending)
+		file = strings.ToLower(file)
+	}
+
+	var reg = &regexp.Regexp{}
+	reg = regexp.MustCompile("^(([a-zA-Z]{1,}_)?0*)?" + regexp.QuoteMeta(ending) + "$")
+
+	return reg.MatchString(file)
 }
 
 func extEndings(filename string, extensions []string) []string {

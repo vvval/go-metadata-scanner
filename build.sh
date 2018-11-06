@@ -16,9 +16,9 @@ build(){
 	GOOS=$2 GOARCH=$3 ./build.sh
 
 	if [ "$2" == "windows" ]; then
-		mv scanner builds/$bdir/scanner-$1-$3.exe
+		mv scanner builds/$bdir/scanner-$1.exe
 	else
-		mv scanner builds/$bdir/scanner-$1-$3
+		mv scanner builds/$bdir/scanner-$1
 	fi
 
 	cp app.yaml builds/$bdir

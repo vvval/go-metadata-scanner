@@ -8,6 +8,7 @@ import (
 	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/util/log"
 	"os"
+	"path/filepath"
 )
 
 func init() {
@@ -23,9 +24,9 @@ func init() {
 		os.Exit(1)
 	}
 
-	config.Dict = configuration.Load(config.Dict, dir+"/dict.yaml").(config.DictConfig)
-	config.App = configuration.Load(config.App, dir+"/app.yaml").(config.AppConfig)
-	config.MSCSV = configuration.Load(config.MSCSV, dir+"/mscsv.yaml").(config.MSCSVConfig)
+	config.Dict = configuration.Load(config.Dict, filepath.Join(dir, "dict.yaml")).(config.DictConfig)
+	config.App = configuration.Load(config.App, filepath.Join(dir, "app.yaml")).(config.AppConfig)
+	config.MSCSV = configuration.Load(config.MSCSV, filepath.Join(dir, "mscsv.yaml")).(config.MSCSVConfig)
 }
 
 func main() {

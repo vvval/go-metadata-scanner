@@ -20,7 +20,7 @@ func Load(conf Config, filename string) Config {
 			}
 		}
 	} else {
-		log.Failure("Config load failed, file not exists", getType(conf))
+		log.Failure("Config load failed, file not exists", getType(conf), filename)
 	}
 
 	if err != nil {

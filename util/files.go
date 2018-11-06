@@ -9,6 +9,8 @@ import (
 )
 
 func RootDir() (string, error) {
+	//for debug mode: return ".",nil
+
 	path, err := os.Executable()
 	if err != nil {
 		return "", err
