@@ -45,38 +45,48 @@ func TestCandidates(t *testing.T) {
 
 func TestScanDir(t *testing.T) {
 	type check struct {
-		dir string
-		ext []string
-		exp vars.Chunk
+		dir    string
+		ext    []string
+		exp    vars.Chunk
+		should bool
 	}
 
 	set := []check{
 		{"./fixtures", []string{"ext", "ext3"}, vars.Chunk{
-			filepath.Join("fixtures", "subfolder1", "file1.ext"),
-			filepath.Join("fixtures", "subfolder2", "file3.ext3"),
+			filepath.Join("fixtures", "subFolder1", "file1.ext"),
+			filepath.Join("fixtures", "SubFolder2", "file3.ext3"),
 			filepath.Join("fixtures", "file2.ext"),
 			filepath.Join("fixtures", "file4.ext3"),
-		}},
-		{"./fixtures/SubFolder2", []string{"ext2"}, vars.Chunk{}},
+		}, true},
+		{"./fixtures/SubFolder2", []string{"ext2"}, vars.Chunk{}, true},
 		{"./fixtures/SubFolder2", []string{"ext3"}, vars.Chunk{
-			filepath.Join("fixtures", "subfolder2", "file3.ext3"),
-		}},
+			filepath.Join("fixtures", "SubFolder2", "file3.ext3"),
+		}, true},
 		{"./fixtures/SubFolder2", []string{"ext3"}, vars.Chunk{
-			filepath.Join("fixtures", "subfolder2", "file3.ext3"),
-		}},
+			filepath.Join("fixtures", "SubFolder2", "file3.ext3"),
+		}, true},
 		{"./fixtures/SubFolder2", []string{}, vars.Chunk{
-			filepath.Join("fixtures", "subfolder2", "file3.ext3"),
-		}},
+			filepath.Join("fixtures", "SubFolder2", "file3.ext3"),
+		}, true},
+		{"./fixtures", []string{"ext2"}, vars.Chunk{
+			filepath.Join("fixtures", "subFolder1", "subfolder3", "file5.ext2"),
+		}, true},
+		{"./fixtures/SubFolder2", []string{}, vars.Chunk{
+			filepath.Join("fixtures", "subFolder2", "file3.ext3"),
+		}, false},
 		{"./fixtures", []string{"ext2"}, vars.Chunk{
 			filepath.Join("fixtures", "subfolder1", "subfolder3", "file5.ext2"),
-		}},
+		}, false},
 	}
 
 	for i, v := range set {
 		res := MustDir(v.dir, v.ext)
 		exp := v.exp
-		if !util.Equal(res, exp) && (len(res) > 0 || len(exp) > 0) {
-			t.Errorf("scan dir incorrect for dir `%s` (line `%d`) and ext `%+v`:\ngot `%+v`\nexpected `%+v`", v.dir, i, v.ext, res, exp)
+		var eq = util.Equal(res, exp)
+		if eq && !v.should {
+			t.Errorf("scan dir failed for dir `%s` (line `%d`) and ext `%+v` (wrong inequality):\ngot `%+v` (`%t`)\nexp `%+v` (`%t`)", v.dir, i, v.ext, res, eq, exp, v.should)
+		} else if !eq && v.should {
+			t.Errorf("scan dir failed for dir `%s` (line `%d`) and ext `%+v` (wrong equality):\ngot `%+v` (`%t`)\nexp `%+v` (`%t`)", v.dir, i, v.ext, res, eq, exp, v.should)
 		}
 	}
 }

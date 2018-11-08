@@ -21,6 +21,10 @@ func UniqueValues(value []string) []string {
 }
 
 func Equal(a, b []string) bool {
+	if len(a) == 0 && len(b) == 0 {
+		return true
+	}
+
 	if len(a) != len(b) {
 		return false
 	}
