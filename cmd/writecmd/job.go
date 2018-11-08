@@ -34,15 +34,19 @@ func (j *Job) MergePayload(tags metadata.Tags) {
 
 func interface2Slice(slice interface{}) []string {
 	value := reflect.ValueOf(slice)
-	output := make([]string, value.Len())
-
 	if value.Kind() == reflect.Slice {
+		output := make([]string, value.Len())
 		for i := 0; i < value.Len(); i++ {
 			output[i] = fmt.Sprintf("%s", value.Index(i))
 		}
+
+		return output
+	} else if value.Kind() == reflect.String {
+		fmt.Printf("STRING `%v`\n", value.String())
+		return []string{value.String()}
 	}
 
-	return output
+	return []string{}
 }
 
 func NewJob(filename string, payload metadata.Payload) *Job {
