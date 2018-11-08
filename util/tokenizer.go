@@ -29,7 +29,7 @@ type tokenizer struct {
 
 var t tokenizer
 
-func (t *tokenizer) addKeyword(input string, index int) {
+func (t *tokenizer) addKeyword(input []rune, index int) {
 	keyword := fetchKeyword(input, t.lastIndex, index)
 	t.lastIndex = index
 
@@ -49,15 +49,17 @@ func (t *tokenizer) toggleQuot() {
 func SplitKeywords(input string) []string {
 	t = tokenizer{}
 
-	for index, r := range []rune(input) {
+	runes := []rune(input)
+	for index, r := range runes {
 		if unicode.In(r, separators) && !t.quotFound {
-			t.addKeyword(input, index)
+			t.addKeyword(runes, index)
 
 			continue
 		}
 
-		if index == len(input)-1 {
-			t.addKeyword(input, len(input))
+		//end of string
+		if index == len(runes)-1 {
+			t.addKeyword(runes, len(runes))
 
 			continue
 		}
@@ -72,19 +74,18 @@ func SplitKeywords(input string) []string {
 	return t.keywords
 }
 
-func fetchKeyword(input string, start, end int) string {
-	return trim(cut(input, start, end))
+func fetchKeyword(runes []rune, start, end int) string {
+	return trim(cut(runes, start, end))
 }
 
-func trim(input string) string {
-	return strings.Trim(input, trimRunes)
+func trim(s string) string {
+	return strings.Trim(s, trimRunes)
 }
 
-func cut(input string, start, end int) string {
-	r := []rune(input)
-	if end > len(r) {
-		end = len(r)
+func cut(runes []rune, start, end int) string {
+	if end > len(runes) {
+		end = len(runes)
 	}
 
-	return string(r[start:end])
+	return string(runes[start:end])
 }

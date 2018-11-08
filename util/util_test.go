@@ -37,6 +37,8 @@ func TestTokenizer(t *testing.T) {
 		`a,"b,c",d`: {"a", "d", `b,c`},
 		"a;b,c":     {"a", "b", "c"},
 		`a;b,c"`:    {"a", "b", "c"},
+		`F ‘L`:      {"F ‘L"},
+		`F L`:       {"F L"},
 	}
 
 	for str, exp := range set {
@@ -58,12 +60,13 @@ func TestFetchKeyword(t *testing.T) {
 		{"a,b,,c, d", "a", 0, 1},
 		{"a,b,,c, d", "a", 0, 2},
 		{"a,b,,c, d", "a,b", 0, 5},
+		{"a,b`d,c, d", "a,b`d", 0, 5},
 		{"a,b,,c, d", "", 3, 5},
 		{"a,b,,c, d", "", 3, 3},
 	}
 
 	for i, s := range set {
-		f := fetchKeyword(s.s, s.start, s.end)
+		f := fetchKeyword([]rune(s.s), s.start, s.end)
 		if f != s.exp {
 			t.Errorf("keyword cut failed (line `%d`):\ngot `%s`\nexpected `%s`", i, f, s.exp)
 		}
