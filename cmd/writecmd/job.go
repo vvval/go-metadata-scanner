@@ -42,7 +42,6 @@ func interface2Slice(slice interface{}) []string {
 
 		return output
 	} else if value.Kind() == reflect.String {
-		fmt.Printf("STRING `%v`\n", value.String())
 		return []string{value.String()}
 	}
 
