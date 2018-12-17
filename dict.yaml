@@ -32,6 +32,9 @@ known:
   credit: ["IPTC:Credit","XMP:Credit"]
   source: ["IPTC:Source","XMP:Source"]
 
+groups:
+  keywords: "keywords.*"
+
 #known bool-value tags
 #all tags should be either a known tag keys or written in standard format <GROUP:TagName>
 booleans: ["copyrighted"]

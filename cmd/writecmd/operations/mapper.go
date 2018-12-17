@@ -34,7 +34,8 @@ func mapPayload(columns map[int]vars.Tag, input map[int]string, dict config.Dict
 				payload.AddBool(tag, len(value) != 0)
 			} else if len(value) != 0 {
 				if dict.IsList(columnTag.Key(), tag) {
-					payload.AddList(tag, util.SplitKeywords(value))
+					//Not AddList because we can have multiple columns for list tags like: "Keywords: Poses", "Keywords: Age"
+					payload.UpdateList(tag, util.SplitKeywords(value))
 				} else {
 					payload.AddTag(tag, value)
 				}

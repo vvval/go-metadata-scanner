@@ -5,11 +5,13 @@ import (
 	"github.com/vvval/go-metadata-scanner/util"
 	"github.com/vvval/go-metadata-scanner/vars"
 	"gopkg.in/yaml.v2"
+	"regexp"
 	"strings"
 )
 
 type DictSchema struct {
 	Known    map[string][]string `yaml:"known"`
+	Groups   map[string]string   `yaml:"groups"`
 	Booleans []string            `yaml:"booleans"`
 	Lists    []string            `yaml:"lists"`
 }
@@ -26,6 +28,7 @@ func (s DictSchema) Parse(data []byte) (configuration.Config, error) {
 
 	return DictConfig{
 		known:    s.Known,
+		groups:   s.Groups,
 		booleans: s.Booleans,
 		lists:    s.Lists,
 	}, nil
@@ -46,6 +49,7 @@ func (c DictConfig) MergeDefault(conf configuration.Config) configuration.Config
 
 type DictConfig struct {
 	known    map[string][]string
+	groups   map[string]string
 	booleans []string
 	lists    []string
 }
@@ -64,6 +68,15 @@ func (c DictConfig) Find(name string) (vars.Tag, bool) {
 	for _, l := range c.lists {
 		if strings.EqualFold(l, name) {
 			return found("", name, []string{name})
+		}
+	}
+
+	var reg = &regexp.Regexp{}
+	for key, expr := range c.groups {
+		reg = regexp.MustCompile("(?i)^" + expr + "$")
+
+		if reg.MatchString(name) {
+			return known(key, c.known)
 		}
 	}
 

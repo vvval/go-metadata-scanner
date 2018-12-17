@@ -14,6 +14,8 @@ type Flags struct {
 	append        bool
 	saveOriginals bool
 	verbose       bool
+	moreVerbose   bool
+	mostVerbose   bool
 }
 
 func (f Flags) Filename() string {
@@ -46,7 +48,15 @@ func (f Flags) Originals() bool {
 }
 
 func (f Flags) Verbosity() bool {
-	return f.verbose
+	return f.verbose || f.moreVerbose || f.mostVerbose
+}
+
+func (f Flags) MoreVerbosity() bool {
+	return f.moreVerbose || f.mostVerbose
+}
+
+func (f Flags) MostVerbosity() bool {
+	return f.mostVerbose
 }
 
 func (f *Flags) Fill(cmd *cobra.Command) {
@@ -56,5 +66,7 @@ func (f *Flags) Fill(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&f.directory, "directory", "d", "", "Directory with files to be processed")
 	cmd.Flags().BoolVarP(&f.append, "append", "a", false, "Append new data to existing values?")
 	cmd.Flags().BoolVarP(&f.saveOriginals, "originals", "o", false, "Save original files (overwrite with new data if not set)?")
-	cmd.Flags().BoolVarP(&f.verbose, "verbose", "v", false, "Verbosity")
+	cmd.Flags().BoolVarP(&f.verbose, "v", "", false, "Verbosity")
+	cmd.Flags().BoolVarP(&f.moreVerbose, "vv", "", false, "More Verbosity")
+	cmd.Flags().BoolVarP(&f.mostVerbose, "vvv", "", false, "Most Verbosity")
 }
