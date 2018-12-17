@@ -17,7 +17,7 @@ var (
 			{0x0022, 0x0022, 1}, //quot
 		},
 	}
-	trimRunes = `,; "`
+	trimRunes = ",; \"\t\n"
 )
 
 type tokenizer struct {
