@@ -45,19 +45,19 @@ func TestDictConfig(t *testing.T) {
 
 	set := []check{
 		{
-			DictConfig{map[string][]string{"a": {"a1", "a2"}}, []string{"bool1", "bool2"}, []string{"list1", "list2"}},
-			DictConfig{map[string][]string{}, []string{}, []string{}},
-			DictConfig{map[string][]string{"a": {"a1", "a2"}}, []string{"bool1", "bool2"}, []string{"list1", "list2"}},
+			DictConfig{map[string][]string{"a": {"a1", "a2"}}, map[string]string{}, []string{"bool1", "bool2"}, []string{"list1", "list2"}},
+			DictConfig{map[string][]string{}, map[string]string{}, []string{}, []string{}},
+			DictConfig{map[string][]string{"a": {"a1", "a2"}}, map[string]string{}, []string{"bool1", "bool2"}, []string{"list1", "list2"}},
 		},
 		{
-			DictConfig{map[string][]string{}, []string{}, []string{}},
-			DictConfig{map[string][]string{"a": {"a1", "a2"}}, []string{"bool1", "bool2"}, []string{"list1", "list2"}},
-			DictConfig{map[string][]string{"a": {"a1", "a2"}}, []string{"bool1", "bool2"}, []string{"list1", "list2"}},
+			DictConfig{map[string][]string{}, map[string]string{}, []string{}, []string{}},
+			DictConfig{map[string][]string{"a": {"a1", "a2"}}, map[string]string{}, []string{"bool1", "bool2"}, []string{"list1", "list2"}},
+			DictConfig{map[string][]string{"a": {"a1", "a2"}}, map[string]string{}, []string{"bool1", "bool2"}, []string{"list1", "list2"}},
 		},
 		{
-			DictConfig{map[string][]string{"a": {"a1", "a2"}}, []string{"bool1", "bool2"}, []string{"list1", "list2"}},
-			DictConfig{map[string][]string{"b": {"b1", "b2"}}, []string{"bool3", "bool2"}, []string{"list3", "list2"}},
-			DictConfig{map[string][]string{"a": {"a2", "a1"}, "b": {"b1", "b2"}}, []string{"bool1", "bool2", "bool3"}, []string{"list1", "list2", "list3"}},
+			DictConfig{map[string][]string{"a": {"a1", "a2"}}, map[string]string{}, []string{"bool1", "bool2"}, []string{"list1", "list2"}},
+			DictConfig{map[string][]string{"b": {"b1", "b2"}}, map[string]string{}, []string{"bool3", "bool2"}, []string{"list3", "list2"}},
+			DictConfig{map[string][]string{"a": {"a2", "a1"}, "b": {"b1", "b2"}}, map[string]string{}, []string{"bool1", "bool2", "bool3"}, []string{"list1", "list2", "list3"}},
 		},
 	}
 
@@ -92,6 +92,28 @@ func TestDictFind(t *testing.T) {
 		_, f := dict.Find(s.name)
 		if f != s.found {
 			t.Errorf("find failed (line `%d`):\ngot `%t`\nexpected `%t`", i, f, s.found)
+		}
+	}
+}
+
+func TestDictFindGroup(t *testing.T) {
+	type check struct {
+		name  string
+		found bool
+	}
+
+	set := []check{
+		{"keywords", true},
+		{"kkeywords", false},
+		{"keywordss", true},
+	}
+
+	dict := configuration.Load(Dict, "./../dict.yaml").(DictConfig)
+
+	for i, s := range set {
+		_, f := dict.Find(s.name)
+		if f != s.found {
+			t.Errorf("find groups failed (line `%d`):\ngot `%t`\nexpected `%t`", i, f, s.found)
 		}
 	}
 }
