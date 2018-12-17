@@ -47,7 +47,6 @@ func scanHandler(flags scancmd.Flags, appConfig config.AppConfig, initialPoolSiz
 	if flags.Verbosity() {
 		log.Visibility.Debug = true
 		log.Visibility.Log = true
-		log.Visibility.Command = true
 	}
 
 	log.Log("Scanning...", fmt.Sprintf("Directory is \"%s\"", util.Abs(flags.Directory())))

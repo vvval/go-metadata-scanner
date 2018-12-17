@@ -43,7 +43,6 @@ func writeHandler(flags writecmd.Flags, appConfig config.AppConfig, dictConfig c
 	if flags.Verbosity() {
 		log.Visibility.Debug = true
 		log.Visibility.Log = true
-		log.Visibility.Command = true
 	}
 
 	files = scan.MustDir(flags.Directory(), appConfig.Extensions())

@@ -3,13 +3,19 @@ package etool
 import (
 	"fmt"
 	"github.com/vvval/go-metadata-scanner/config"
+	"github.com/vvval/go-metadata-scanner/util/log"
 	"github.com/vvval/go-metadata-scanner/vars/metadata"
 )
 
 const overwriteFlag string = "-overwrite_original"
 
 func Write(name string, tags metadata.Tags, useSeparator, saveOriginals bool) ([]byte, error) {
-	return run(config.App.ToolPath(), packWriteArgs(name, tags, useSeparator, saveOriginals)...)
+	res, err := run(config.App.ToolPath(), packWriteArgs(name, tags, useSeparator, saveOriginals)...)
+	if err == nil {
+		log.Log("write into file", name)
+	}
+
+	return res, err
 }
 
 func packWriteArgs(name string, tags metadata.Tags, useSeparator bool, saveOriginals bool) []string {
